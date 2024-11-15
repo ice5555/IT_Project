@@ -1,0 +1,55 @@
+# Python 编译文件
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 虚拟环境目录
+venv/
+env/
+.idea/
+.vscode/
+*.swp
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# Django 文件
+db.sqlite3
+media/
+staticfiles/
+*.log
+
+# 环境变量文件
+.env
+
+# 日志文件
+logs/
+*.log
+
+# 单元测试和覆盖率报告
+.coverage
+htmlcov/
+*.cover
+.tox/
+nosetests.xml
+coverage.xml
+*.egg-info/
+
+# MyPy, Pytest, Pyenv
+.mypy_cache/
+.pytest_cache/
+.pyenv/
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints/
+
+# Nginx 配置文件
+*.conf
+
+# Gunicorn 配置文件
+gunicorn.sock
+
+# Docker 文件
+docker-compose.yml
+Dockerfile
