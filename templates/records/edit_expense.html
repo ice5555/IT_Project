@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}编辑支出记录{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">编辑支出记录</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">保存</button>
+</form>
+
+<!-- 自动补全脚本同添加页面，可复用 -->
+
+{% endblock %}

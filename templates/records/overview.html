@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}收入支出总览{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">收入支出总览</h2>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-success text-white mb-3">
+            <div class="card-body">
+                <h5 class="card-title">总收入</h5>
+                <p class="card-text">¥{{ total_income }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-danger text-white mb-3">
+            <div class="card-body">
+                <h5 class="card-title">总支出</h5>
+                <p class="card-text">¥{{ total_expense }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-primary text-white mb-3">
+            <div class="card-body">
+                <h5 class="card-title">净余额</h5>
+                <p class="card-text">¥{{ net_balance }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h3>支出分类统计</h3>
+<table class="table table-striped mb-4">
+    <thead>
+        <tr>
+            <th>类别</th>
+            <th>金额</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in expense_by_category %}
+        <tr>
+            <td>{{ item.category }}</td>
+            <td>¥{{ item.total }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="2">暂无支出记录。</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h3>收入分类统计</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>类别</th>
+            <th>金额</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in income_by_category %}
+        <tr>
+            <td>{{ item.category }}</td>
+            <td>¥{{ item.total }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="2">暂无收入记录。</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

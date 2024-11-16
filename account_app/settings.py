@@ -27,6 +27,12 @@ SECRET_KEY = 'django-insecure-dci+sfegm3x-sc4dvbk$hehs_0%a=yk&_-$(pem)**dw&ca%f7
 DEBUG = True
 
 ALLOWED_HOSTS = []
+ALLOWED_HOSTS.append('34.244.31.244')
+ALLOWED_HOSTS.append('127.0.0.1')
+
+CSRF_TRUSTED_ORIGINS = []
+CSRF_TRUSTED_ORIGINS.append('http://34.244.31.244:5525')
+CSRF_TRUSTED_ORIGINS.append('http://127.0.0.1')
 
 
 # Application definition
@@ -38,6 +44,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'rest_framework',
 
     'apps.budget',
     'apps.records',
@@ -59,7 +67,7 @@ ROOT_URLCONF = 'account_app.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -128,3 +136,12 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+    ],
+}

@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}删除收入记录{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">删除收入记录</h2>
+
+<p>你确定要删除这条收入记录吗？</p>
+
+<p><strong>{{ income.source }} - ¥{{ income.amount }}</strong></p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">删除</button>
+    <a href="{% url 'income_list' %}" class="btn btn-secondary">取消</a>
+</form>
+
+{% endblock %}

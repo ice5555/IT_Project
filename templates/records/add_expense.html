@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}添加支出记录{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">添加支出记录</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">保存</button>
+</form>
+
+<script>
+$(function() {
+    // 商店名称自动补全
+    $("#id_store").autocomplete({
+        source: function(request, response) {
+            $.ajax({
+                url: "{% url 'store_autocomplete' %}",
+                dataType: "json",
+                data: {
+                    q: request.term
+                },
+                success: function(data) {
+                    response(data);
+                }
+            });
+        },
+        minLength: 1,
+    });
+
+    // 商品名称自动补全
+    $("#id_description").autocomplete({
+        source: function(request, response) {
+            $.ajax({
+                url: "{% url 'product_autocomplete' %}",
+                dataType: "json",
+                data: {
+                    q: request.term
+                },
+                success: function(data) {
+                    response($.map(data, function(item) {
+                        return item.description;
+                    }));
+                }
+            });
+        },
+        minLength: 1,
+    });
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}收入记录{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">收入记录</h2>
+
+<a href="{% url 'add_income' %}" class="btn btn-primary mb-3">添加收入记录</a>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>来源</th>
+            <th>类别</th>
+            <th>金额</th>
+            <th>日期</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in incomes %}
+        <tr>
+            <td>{{ record.source }}</td>
+            <td>{{ record.category }}</td>
+            <td>¥{{ record.amount }}</td>
+            <td>{{ record.date }}</td>
+            <td>
+                <a href="{% url 'edit_income' record.id %}" class="btn btn-sm btn-secondary">编辑</a>
+                <a href="{% url 'delete_income' record.id %}" class="btn btn-sm btn-danger">删除</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">暂无收入记录。</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

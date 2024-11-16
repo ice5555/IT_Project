@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}支出记录{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">支出记录</h2>
+
+<a href="{% url 'add_expense' %}" class="btn btn-primary mb-3">添加支出记录</a>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>描述</th>
+            <th>类别</th>
+            <th>金额</th>
+            <th>购买日期</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in expenses %}
+        <tr>
+            <td>{{ record.description }}</td>
+            <td>{{ record.category }}</td>
+            <td>¥{{ record.current_price }}</td>
+            <td>{{ record.purchase_date }}</td>
+            <td>
+                <a href="{% url 'edit_expense' record.id %}" class="btn btn-sm btn-secondary">编辑</a>
+                <a href="{% url 'delete_expense' record.id %}" class="btn btn-sm btn-danger">删除</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">暂无支出记录。</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

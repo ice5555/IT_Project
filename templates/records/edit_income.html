@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}编辑收入记录{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">编辑收入记录</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">保存</button>
+</form>
+
+<script>
+$(function() {
+    // 收入类别自动补全（与添加页面相同）
+    $("#id_category").autocomplete({
+        source: function(request, response) {
+            $.ajax({
+                url: "{% url 'income_category_autocomplete' %}",
+                dataType: "json",
+                data: {
+                    q: request.term
+                },
+                success: function(data) {
+                    response(data);
+                }
+            });
+        },
+        minLength: 1,
+    });
+});
+</script>
+
+{% endblock %}
