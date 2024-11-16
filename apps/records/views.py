@@ -1,30 +1,37 @@
 # apps/records/views.py
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.db.models import Sum
 from django.utils import timezone
-from datetime import datetime
+from django.contrib.auth.decorators import login_required
+
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 
 from .models import ExpenseRecord, DailyExpense, IncomeRecord
 from .serializers import ExpenseRecordSerializer, DailyExpenseSerializer, IncomeRecordSerializer
 from .forms import ExpenseRecordForm, IncomeRecordForm
 
 import logging
+import csv
+
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
 # ExpenseRecord ViewSet
 class ExpenseRecordViewSet(viewsets.ModelViewSet):
-    queryset = ExpenseRecord.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = ExpenseRecordSerializer
 
     def perform_create(self, serializer):
         instance = serializer.save()
         instance.generate_daily_expenses()
 
+    def get_queryset(self):
+        return ExpenseRecord.objects.filter(user=self.request.user)
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
@@ -97,7 +104,7 @@ class ExpenseRecordViewSet(viewsets.ModelViewSet):
         """获取商品自动补全建议"""
         query = request.query_params.get('q', '')
         products = ExpenseRecord.objects.filter(description__icontains=query).values(
-            'description', 'specification', 'category', 'original_price', 'current_price', 'discount_type', 'store'
+            'tags','description', 'specification', 'category', 'original_price', 'current_price', 'discount_type', 'store', 'estimated_usage_days',
         ).distinct()
         return Response(list(products), status=status.HTTP_200_OK)
 
@@ -115,14 +122,21 @@ class ExpenseRecordViewSet(viewsets.ModelViewSet):
         })
 
 # DailyExpense ViewSet
+
 class DailyExpenseViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = DailyExpense.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = DailyExpenseSerializer
 
+    def get_queryset(self):
+        return DailyExpense.objects.filter(expense_record__user=self.request.user)
 # IncomeRecord ViewSet
+
 class IncomeRecordViewSet(viewsets.ModelViewSet):
-    queryset = IncomeRecord.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = IncomeRecordSerializer
+
+    def get_queryset(self):
+        return IncomeRecord.objects.filter(user=self.request.user)
 
     @action(detail=False, methods=['get'])
     def categories(self, request):
@@ -133,10 +147,13 @@ class IncomeRecordViewSet(viewsets.ModelViewSet):
 
 
 # 视图函数部分
+@login_required
 def add_expense(request):
     if request.method == 'POST':
         form = ExpenseRecordForm(request.POST)
         if form.is_valid():
+            expense = form.save(commit=False)
+            expense.user = request.user
             expense = form.save()
             expense.generate_daily_expenses()
             return redirect('expense_list')
@@ -144,11 +161,13 @@ def add_expense(request):
         form = ExpenseRecordForm()
     return render(request, 'records/add_expense.html', {'form': form})
 
+@login_required
 def expense_list(request):
-    expenses = ExpenseRecord.objects.all().order_by('-purchase_date')
+    expenses = ExpenseRecord.objects.filter(user=request.user).order_by('-purchase_date')
     context = {'expenses': expenses}
     return render(request, 'records/expense_list.html', context)
 
+@login_required
 def overview(request):
     total_income = IncomeRecord.objects.aggregate(total=Sum('amount'))['total'] or 0
     total_expense = ExpenseRecord.objects.aggregate(total=Sum('current_price'))['total'] or 0
@@ -167,6 +186,7 @@ def overview(request):
 
     return render(request, 'records/overview.html', context)
 
+@login_required
 def edit_expense(request, pk):
     expense = get_object_or_404(ExpenseRecord, pk=pk)
     if request.method == 'POST':
@@ -179,6 +199,7 @@ def edit_expense(request, pk):
         form = ExpenseRecordForm(instance=expense)
     return render(request, 'records/edit_expense.html', {'form': form})
 
+@login_required
 def delete_expense(request, pk):
     expense = get_object_or_404(ExpenseRecord, pk=pk)
     if request.method == 'POST':
@@ -187,32 +208,33 @@ def delete_expense(request, pk):
     return render(request, 'records/delete_expense.html', {'expense': expense})
 
 # 自动补全接口
+@login_required
 def store_autocomplete(request):
     query = request.GET.get('q', '')
     stores = ExpenseRecord.objects.filter(store__icontains=query).values_list('store', flat=True).distinct()
     return JsonResponse(list(stores), safe=False)
 
-def product_autocomplete(request):
-    query = request.GET.get('q', '')
-    products = ExpenseRecord.objects.filter(description__icontains=query).values('description').distinct()
-    descriptions = [item['description'] for item in products]
-    return JsonResponse(descriptions, safe=False)
 
+@login_required
 def income_list(request):
-    incomes = IncomeRecord.objects.all().order_by('-date')
+    incomes = IncomeRecord.objects.filter(user=request.user).order_by('-date')
     context = {'incomes': incomes}
     return render(request, 'records/income_list.html', context)
 
+@login_required
 def add_income(request):
     if request.method == 'POST':
         form = IncomeRecordForm(request.POST)
         if form.is_valid():
+            expense = form.save(commit=False)
+            expense.user = request.user
             form.save()
             return redirect('income_list')
     else:
         form = IncomeRecordForm()
     return render(request, 'records/add_income.html', {'form': form})
 
+@login_required
 def edit_income(request, pk):
     income = get_object_or_404(IncomeRecord, pk=pk)
     if request.method == 'POST':
@@ -224,6 +246,7 @@ def edit_income(request, pk):
         form = IncomeRecordForm(instance=income)
     return render(request, 'records/edit_income.html', {'form': form})
 
+@login_required
 def delete_income(request, pk):
     income = get_object_or_404(IncomeRecord, pk=pk)
     if request.method == 'POST':
@@ -231,7 +254,109 @@ def delete_income(request, pk):
         return redirect('income_list')
     return render(request, 'records/delete_income.html', {'income': income})
 
+@login_required
 def income_category_autocomplete(request):
     query = request.GET.get('q', '')
     categories = IncomeRecord.objects.filter(category__icontains=query).values_list('category', flat=True).distinct()
     return JsonResponse(list(categories), safe=False)
+
+
+
+@login_required
+def export_expenses(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="expenses.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['Description', 'Specification', 'Category', 'Tags', 'Original Price', 'Current Price',
+                     'Discount Type', 'Store', 'Estimated Usage Days', 'Purchase Date', 'Expiration Date'])
+
+    expenses = ExpenseRecord.objects.filter(user=request.user)
+    for expense in expenses:
+        writer.writerow([
+            expense.description,
+            expense.specification,
+            expense.category,
+            expense.tags,
+            expense.original_price,
+            expense.current_price,
+            expense.discount_type,
+            expense.store,
+            expense.estimated_usage_days,
+            expense.purchase_date,
+            expense.expiration_date,
+        ])
+
+    return response
+
+
+# 导出收入记录为 CSV
+@login_required
+def export_incomes(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="incomes.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['Source', 'Amount', 'Category', 'Date', 'Tags'])
+
+    incomes = IncomeRecord.objects.filter(user=request.user)
+    for income in incomes:
+        writer.writerow([
+            income.source,
+            income.amount,
+            income.category,
+            income.date,
+            income.tags,
+        ])
+
+    return response
+
+
+# 导入支出记录
+@login_required
+def import_expenses(request):
+    if request.method == 'POST' and request.FILES.get('csv_file'):
+        csv_file = request.FILES['csv_file']
+        reader = csv.reader(csv_file.read().decode('utf-8').splitlines())
+        next(reader)  # 跳过表头
+
+        for row in reader:
+            ExpenseRecord.objects.create(
+                user=request.user,
+                description=row[0],
+                specification=row[1],
+                category=row[2],
+                tags=row[3],
+                original_price=row[4],
+                current_price=row[5],
+                discount_type=row[6],
+                store=row[7],
+                estimated_usage_days=row[8],
+                purchase_date=row[9],
+                expiration_date=row[10] if row[10] else None
+            )
+        return redirect('expense_list')
+
+    return render(request, 'records/import_expenses.html')
+
+
+# 导入收入记录
+@login_required
+def import_incomes(request):
+    if request.method == 'POST' and request.FILES.get('csv_file'):
+        csv_file = request.FILES['csv_file']
+        reader = csv.reader(csv_file.read().decode('utf-8').splitlines())
+        next(reader)  # 跳过表头
+
+        for row in reader:
+            IncomeRecord.objects.create(
+                user=request.user,
+                source=row[0],
+                amount=row[1],
+                category=row[2],
+                date=row[3],
+                tags=row[4]
+            )
+        return redirect('income_list')
+
+    return render(request, 'records/import_incomes.html')

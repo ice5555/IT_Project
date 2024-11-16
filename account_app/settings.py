@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'apps.budget',
     'apps.records',
     'apps.reports',
+    'apps.accounts',
 ]
 
 MIDDLEWARE = [
@@ -145,3 +146,14 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.JSONParser',
     ],
 }
+
+# 设置登录URL
+LOGIN_URL = 'login'
+
+# 设置登录后重定向的URL
+LOGIN_REDIRECT_URL = 'overview'
+
+# 设置注销后重定向的URL
+LOGOUT_REDIRECT_URL = 'login'
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

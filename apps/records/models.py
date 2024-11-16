@@ -1,9 +1,12 @@
 from django.db import models
 from datetime import timedelta, date
 from decimal import Decimal
+from django.contrib.auth.models import User
 
 
 class ExpenseRecord(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+
     description = models.CharField(max_length=200)  # 描述或商品名称
     specification = models.CharField(max_length=50, blank=True, null=True)  # 规格（如 450g, 6个）
     category = models.CharField(max_length=100)  # 支持自定义输入
@@ -82,6 +85,8 @@ class DailyExpense(models.Model):
 
 
 class IncomeRecord(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+
     source = models.CharField(max_length=100)  # 收入来源，例如：工资、投资、礼金等
     amount = models.DecimalField(max_digits=10, decimal_places=2)  # 收入金额
     category = models.CharField(max_length=100)  # 收入类别，支持自定义

@@ -12,43 +12,61 @@
 </form>
 
 <script>
-$(function() {
-    // 商店名称自动补全
-    $("#id_store").autocomplete({
-        source: function(request, response) {
-            $.ajax({
-                url: "{% url 'store_autocomplete' %}",
-                dataType: "json",
-                data: {
-                    q: request.term
-                },
-                success: function(data) {
-                    response(data);
-                }
-            });
-        },
-        minLength: 1,
-    });
+    $(function() {
+        // 商品名称自动补全及信息填充
+        $("#id_description").autocomplete({
+            source: function(request, response) {
+                $.ajax({
+                    url: "/api/expense-records/product_autocomplete/",
+                    dataType: "json",
+                    data: {
+                        q: request.term
+                    },
+                    success: function(data) {
+                        response($.map(data, function(item) {
+                            return {
+                                label: item.description,
+                                value: item.description,
+                                data: item
+                            };
+                        }));
+                    }
+                });
+            },
+            minLength: 1,
+            select: function(event, ui) {
+                const item = ui.item.data;
+                // 自动填充其他表单字段
+                $("#id_specification").val(item.specification || '');
+                $("#id_category").val(item.category || '');
+                $("#id_original_price").val(item.original_price || '');
+                $("#id_current_price").val(item.current_price || '');
+                $("#id_discount_type").val(item.discount_type || '');
+                $("#id_tags").val(item.tags || '');
+                $("#id_store").val(item.store || '');
 
-    // 商品名称自动补全
-    $("#id_description").autocomplete({
-        source: function(request, response) {
-            $.ajax({
-                url: "{% url 'product_autocomplete' %}",
-                dataType: "json",
-                data: {
-                    q: request.term
-                },
-                success: function(data) {
-                    response($.map(data, function(item) {
-                        return item.description;
-                    }));
-                }
-            });
-        },
-        minLength: 1,
-    });
-});
-</script>
+                $("#id_estimated_usage_days").val(item.estimated_usage_days || '');
 
+            }
+        });
+    
+        // 商店名称自动补全
+        $("#id_store").autocomplete({
+            source: function(request, response) {
+                $.ajax({
+                    url: "/api/expense-records/store_autocomplete/",
+                    dataType: "json",
+                    data: {
+                        q: request.term
+                    },
+                    success: function(data) {
+                        response(data);
+                    }
+                });
+            },
+            minLength: 1,
+        });
+    });
+    </script>
+    
 {% endblock %}

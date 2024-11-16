@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>收支概览</h2>
+    <hr>
+    <div class="row">
+        <div class="col-md-4">
+            <h4>收入</h4>
+            <p>£{{ total_income }}</p>
+        </div>
+        <div class="col-md-4">
+            <h4>支出</h4>
+            <p>£{{ total_expense }}</p>
+        </div>
+        <div class="col-md-4">
+            <h4>净余额</h4>
+            <p>£{{ net_balance }}</p>
+        </div>
+    </div>
+
+    <hr>
+    <h3>支出按类别</h3>
+    <canvas id="categoryChart" width="400" height="200"></canvas>
+
+    <h3>月度收支</h3>
+    <canvas id="monthlyChart" width="400" height="200"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const categoryData = {{ category_data|safe }}.map(Number);
+const categoryLabels = {{ category_labels|safe }};
+
+    // 绘制支出按类别的饼图
+    const ctx1 = document.getElementById('categoryChart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'pie',
+        data: {
+            labels: categoryLabels,
+            datasets: [{
+                data: categoryData,
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#66BB6A', '#FFA726'],
+            }]
+        }
+    });
+
+    // 绘制月度收入和支出的柱状图
+    const monthlyLabels = {{ monthly_labels|safe }};
+    const monthlyIncome = {{ monthly_data.income|safe }}.map(Number);
+    const monthlyExpense = {{ monthly_data.expense|safe }}.map(Number);
+
+    const ctx2 = document.getElementById('monthlyChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: monthlyLabels,
+            datasets: [
+                {
+                    label: '收入',
+                    data: monthlyIncome,
+                    backgroundColor: '#36A2EB'
+                },
+                {
+                    label: '支出',
+                    data: monthlyExpense,
+                    backgroundColor: '#FF6384'
+                }
+            ]
+        }
+    });
+</script>
+{% endblock %}

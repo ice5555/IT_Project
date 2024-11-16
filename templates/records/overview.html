@@ -10,7 +10,7 @@
         <div class="card bg-success text-white mb-3">
             <div class="card-body">
                 <h5 class="card-title">总收入</h5>
-                <p class="card-text">¥{{ total_income }}</p>
+                <p class="card-text">￡{{ total_income }}</p>
             </div>
         </div>
     </div>
@@ -18,7 +18,7 @@
         <div class="card bg-danger text-white mb-3">
             <div class="card-body">
                 <h5 class="card-title">总支出</h5>
-                <p class="card-text">¥{{ total_expense }}</p>
+                <p class="card-text">￡{{ total_expense }}</p>
             </div>
         </div>
     </div>
@@ -26,11 +26,12 @@
         <div class="card bg-primary text-white mb-3">
             <div class="card-body">
                 <h5 class="card-title">净余额</h5>
-                <p class="card-text">¥{{ net_balance }}</p>
+                <p class="card-text">￡{{ net_balance }}</p>
             </div>
         </div>
     </div>
 </div>
+
 
 <h3>支出分类统计</h3>
 <table class="table table-striped mb-4">
@@ -44,7 +45,7 @@
         {% for item in expense_by_category %}
         <tr>
             <td>{{ item.category }}</td>
-            <td>¥{{ item.total }}</td>
+            <td>￡{{ item.total }}</td>
         </tr>
         {% empty %}
         <tr>
@@ -66,7 +67,7 @@
         {% for item in income_by_category %}
         <tr>
             <td>{{ item.category }}</td>
-            <td>¥{{ item.total }}</td>
+            <td>￡{{ item.total }}</td>
         </tr>
         {% empty %}
         <tr>
@@ -75,5 +76,10 @@
         {% endfor %}
     </tbody>
 </table>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 {% endblock %}
