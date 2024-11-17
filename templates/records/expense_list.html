@@ -22,7 +22,7 @@
         <tr>
             <td>{{ record.description }}</td>
             <td>{{ record.category }}</td>
-            <td>￡{{ record.current_price }}</td>
+            <td>{{ record.get_currency_symbol }}{{ record.current_price }}</td>
             <td>{{ record.purchase_date }}</td>
             <td>
                 <a href="{% url 'edit_expense' record.id %}" class="btn btn-sm btn-secondary">编辑</a>
@@ -36,5 +36,4 @@
         {% endfor %}
     </tbody>
 </table>
-
 {% endblock %}

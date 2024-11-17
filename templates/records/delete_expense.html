@@ -7,7 +7,7 @@
 
 <p>你确定要删除这条支出记录吗？</p>
 
-<p><strong>{{ expense.description }} - ￡{{ expense.current_price }}</strong></p>
+<p><strong>{{ expense.description }} - {{ expense.current_price }}</strong></p>
 
 <form method="post">
     {% csrf_token %}

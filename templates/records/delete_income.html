@@ -7,7 +7,7 @@
 
 <p>你确定要删除这条收入记录吗？</p>
 
-<p><strong>{{ income.source }} - ￡{{ income.amount }}</strong></p>
+<p><strong>{{ income.source }} - {{ income.amount }}</strong></p>
 
 <form method="post">
     {% csrf_token %}

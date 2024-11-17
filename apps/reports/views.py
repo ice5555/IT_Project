@@ -5,8 +5,10 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.db.models import Sum
 from django.db.models.functions import TruncMonth
+from django.contrib.auth.decorators import login_required
+from django.db.models.functions import TruncDay
 
-from ..records.models import ExpenseRecord, IncomeRecord
+from ..records.models import ExpenseRecord, IncomeRecord, CURRENCY_SYMBOLS
 from django.utils import timezone
 from datetime import datetime, timedelta
 
@@ -22,56 +24,115 @@ def generate_pie_chart(data, labels):
     buf.seek(0)
     return base64.b64encode(buf.read()).decode('utf-8')
 
+
+
+
+
+
 def overview_charts(request):
-    # 收入和支出总览
-    total_income = float(IncomeRecord.objects.aggregate(total=Sum('amount'))['total'] or 0)
-    total_expense = float(ExpenseRecord.objects.aggregate(total=Sum('current_price'))['total'] or 0)
-    net_balance = total_income - total_expense
+    # Get list of currencies used in income and expense records
+    income_currencies = IncomeRecord.objects.values_list('currency', flat=True).distinct()
+    expense_currencies = ExpenseRecord.objects.values_list('currency', flat=True).distinct()
+    currencies = set(list(income_currencies) + list(expense_currencies))
 
-    # 支出按类别
-    expenses_by_category = ExpenseRecord.objects.values('category').annotate(total=Sum('current_price'))
-    categories = [item['category'] for item in expenses_by_category]
-    category_totals = [float(item['total']) for item in expenses_by_category]
+    currency_data = {}
 
-    # 获取过去 12 个月的月度收入和支出数据
-    today = timezone.now()
-    start_date = today - timedelta(days=365)
+    for currency in currencies:
+        # Income and expense totals per currency
+        total_income = IncomeRecord.objects.filter(currency=currency).aggregate(total=Sum('amount'))['total'] or 0
+        total_expense = ExpenseRecord.objects.filter(currency=currency).aggregate(total=Sum('current_price'))['total'] or 0
+        net_balance = total_income - total_expense
 
-    # 按月份聚合收入数据
-    income_by_month = (
-        IncomeRecord.objects
-        .filter(date__gte=start_date)
-        .annotate(month=TruncMonth('date'))
-        .values('month')
-        .annotate(total=Sum('amount'))
-        .order_by('month')
-    )
-    
-    # 按月份聚合支出数据
-    expense_by_month = (
-        ExpenseRecord.objects
-        .filter(purchase_date__gte=start_date)
-        .annotate(month=TruncMonth('purchase_date'))
-        .values('month')
-        .annotate(total=Sum('current_price'))
-        .order_by('month')
-    )
+        # Expenses by category per currency
+        expenses_by_category = ExpenseRecord.objects.filter(currency=currency).values('category').annotate(total=Sum('current_price'))
+        categories = [item['category'] for item in expenses_by_category]
+        category_totals = [float(item['total'] or 0) for item in expenses_by_category]
 
-    # 准备数据以供 Chart.js 使用
-    monthly_labels = [item['month'].strftime('%Y-%m') for item in income_by_month]
-    monthly_income_data = [float(item['total']) for item in income_by_month]
-    monthly_expense_data = [float(item['total']) for item in expense_by_month]
+        # Monthly income and expense data per currency
+        today = timezone.now()
+        start_date = today - timedelta(days=365)
+
+        income_by_month = (
+            IncomeRecord.objects
+            .filter(date__gte=start_date, currency=currency)
+            .annotate(month=TruncMonth('date'))
+            .values('month')
+            .annotate(total=Sum('amount'))
+            .order_by('month')
+        )
+
+        expense_by_month = (
+            ExpenseRecord.objects
+            .filter(purchase_date__gte=start_date, currency=currency)
+            .annotate(month=TruncMonth('purchase_date'))
+            .values('month')
+            .annotate(total=Sum('current_price'))
+            .order_by('month')
+        )
+
+        monthly_labels = [item['month'].strftime('%Y-%m') for item in income_by_month]
+        monthly_income_data = [float(item['total'] or 0) for item in income_by_month]
+        monthly_expense_data = [float(item['total'] or 0) for item in expense_by_month]
+
+        currency_symbol = CURRENCY_SYMBOLS.get(currency, '')
+
+        currency_data[currency] = {
+            'currency_symbol': currency_symbol,
+            'total_income': float(total_income or 0),
+            'total_expense': float(total_expense or 0),
+            'net_balance': float(net_balance or 0),
+            'category_data': category_totals,
+            'category_labels': categories,
+            'monthly_labels': monthly_labels,
+            'monthly_income_data': monthly_income_data,
+            'monthly_expense_data': monthly_expense_data,
+        }
 
     context = {
-        'total_income': total_income,
-        'total_expense': total_expense,
-        'net_balance': net_balance,
-        'category_data': category_totals,
-        'category_labels': categories,
-        'monthly_labels': monthly_labels,
-        'monthly_data': {
-            'income': monthly_income_data,
-            'expense': monthly_expense_data,
-        }
+        'currency_data': currency_data,
     }
+
     return render(request, 'reports/overview_charts.html', context)
+
+
+
+@login_required
+def income_trend_chart(request):
+    # 获取查询参数
+    source = request.GET.get('source')
+    category = request.GET.get('category')
+    days = int(request.GET.get('days', 30))  # 默认为30天
+
+    end_date = timezone.now()
+    start_date = end_date - timedelta(days=days)
+
+    # 筛选数据
+    incomes = IncomeRecord.objects.filter(
+        user=request.user,
+        date__range=[start_date, end_date]
+    )
+
+    if source:
+        incomes = incomes.filter(source=source)
+    if category:
+        incomes = incomes.filter(category=category)
+
+    # 按天聚合收入数据
+    income_by_day = incomes.annotate(day=TruncDay('date')).values('day').annotate(total=Sum('amount')).order_by('day')
+
+    # 准备数据供前端使用
+    labels = [entry['day'].strftime('%Y-%m-%d') for entry in income_by_day]
+    data = [float(entry['total']) for entry in income_by_day]
+
+    return JsonResponse({'labels': labels, 'data': data})
+
+@login_required
+def income_list(request):
+    sources = IncomeRecord.objects.values_list('source', flat=True).distinct()
+    categories = IncomeRecord.objects.values_list('category', flat=True).distinct()
+    
+    context = {
+        'sources': sources,
+        'categories': categories,
+    }
+    return render(request, 'reports/income_list.html', context)

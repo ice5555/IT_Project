@@ -31,6 +31,10 @@
                     <li class="nav-item"><a class="nav-link" href="{% url 'overview' %}">总览</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'expense_list' %}">支出记录</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'income_list' %}">收入记录</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'overview_charts' %}">可视化分析</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'income_list_trend' %}">收入趋势分析析</a></li>
+
+                
                 </ul>
                 <ul class="navbar-nav ms-auto">
                     {% if user.is_authenticated %}

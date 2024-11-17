@@ -4,13 +4,14 @@ from django.http import JsonResponse, HttpResponse
 from django.db.models import Sum
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
-
+from django.db.models import Sum, Case, When, Value, DecimalField, F
+from django.db.models.functions import Upper, Trim
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 
-from .models import ExpenseRecord, DailyExpense, IncomeRecord
+from .models import ExpenseRecord, DailyExpense, IncomeRecord, CURRENCY_SYMBOLS
 from .serializers import ExpenseRecordSerializer, DailyExpenseSerializer, IncomeRecordSerializer
 from .forms import ExpenseRecordForm, IncomeRecordForm
 
@@ -169,19 +170,39 @@ def expense_list(request):
 
 @login_required
 def overview(request):
-    total_income = IncomeRecord.objects.aggregate(total=Sum('amount'))['total'] or 0
-    total_expense = ExpenseRecord.objects.aggregate(total=Sum('current_price'))['total'] or 0
-    net_balance = total_income - total_expense
+    # 获取所有使用的货币
+    income_currencies = IncomeRecord.objects.values_list('currency', flat=True).distinct()
+    expense_currencies = ExpenseRecord.objects.values_list('currency', flat=True).distinct()
+    currencies = set(list(income_currencies) + list(expense_currencies))
 
-    expense_by_category = ExpenseRecord.objects.values('category').annotate(total=Sum('current_price'))
-    income_by_category = IncomeRecord.objects.values('category').annotate(total=Sum('amount'))
+    # 初始化存储数据的字典
+    currency_data = {}
+
+    for currency in currencies:
+        # 计算收入和支出
+        total_income = IncomeRecord.objects.filter(currency=currency).aggregate(total=Sum('amount'))['total'] or 0
+        total_expense = ExpenseRecord.objects.filter(currency=currency).aggregate(total=Sum('current_price'))['total'] or 0
+        net_balance = total_income - total_expense
+
+        # 分类统计
+        expense_by_category = ExpenseRecord.objects.filter(currency=currency).values('category').annotate(total=Sum('current_price'))
+        income_by_category = IncomeRecord.objects.filter(currency=currency).values('category').annotate(total=Sum('amount'))
+
+        # 获取货币符号
+        currency_symbol = CURRENCY_SYMBOLS.get(currency, '')
+
+        # 存储数据
+        currency_data[currency] = {
+            'currency_symbol': currency_symbol,
+            'total_income': total_income,
+            'total_expense': total_expense,
+            'net_balance': net_balance,
+            'expense_by_category': expense_by_category,
+            'income_by_category': income_by_category,
+        }
 
     context = {
-        'total_income': total_income,
-        'total_expense': total_expense,
-        'net_balance': net_balance,
-        'expense_by_category': expense_by_category,
-        'income_by_category': income_by_category,
+        'currency_data': currency_data,
     }
 
     return render(request, 'records/overview.html', context)
@@ -217,8 +238,68 @@ def store_autocomplete(request):
 
 @login_required
 def income_list(request):
-    incomes = IncomeRecord.objects.filter(user=request.user).order_by('-date')
-    context = {'incomes': incomes}
+    # 获取所有类别，用于筛选
+    categories = IncomeRecord.objects.filter(user=request.user).values_list('category', flat=True).distinct()
+    
+    # 获取用户选择的筛选条件
+    selected_category = request.GET.get('category')
+
+    # 查询实际收入（已完成）
+    actual_incomes = IncomeRecord.objects.filter(user=request.user, status='completed')
+    if selected_category:
+        actual_incomes = actual_incomes.filter(category=selected_category)
+    
+    # 查询预计收入（未完成或未支付）
+    expected_incomes = IncomeRecord.objects.filter(user=request.user).exclude(status='completed')
+    if selected_category:
+        expected_incomes = expected_incomes.filter(category=selected_category)
+    
+    # 计算已完成收入总额（按货币分组）
+    actual_totals = actual_incomes.values('currency').annotate(
+        total=Sum(Case(
+            When(amount__isnull=False, then=F('amount')),
+            default=Value(0),
+            output_field=DecimalField()
+        ))
+    )
+    
+    # 计算未支付收入总额（按货币分组）
+    unpaid_totals = IncomeRecord.objects.filter(
+        user=request.user, status='unpaid'
+    ).values('currency').annotate(
+        total=Sum(Case(
+            When(expected_amount__isnull=False, then=F('expected_amount')),
+            default=Value(0),
+            output_field=DecimalField()
+        ))
+    )
+
+    # 计算未完成收入总额（按货币分组）
+    pending_totals = IncomeRecord.objects.filter(
+        user=request.user, status='pending'
+    ).values('currency').annotate(
+        total=Sum(Case(
+            When(expected_amount__isnull=False, then=F('expected_amount')),
+            default=Value(0),
+            output_field=DecimalField()
+        ))
+    )
+
+    # 将查询结果转换为字典格式
+    actual_totals_dict = {item['currency']: item['total'] or 0 for item in actual_totals}
+    unpaid_totals_dict = {item['currency']: item['total'] or 0 for item in unpaid_totals}
+    pending_totals_dict = {item['currency']: item['total'] or 0 for item in pending_totals}
+
+    context = {
+        'categories': categories,
+        'selected_category': selected_category,
+        'actual_incomes': actual_incomes.order_by('-date'),
+        'expected_incomes': expected_incomes.order_by('ddl'),
+        'actual_totals': actual_totals_dict,
+        'unpaid_totals': unpaid_totals_dict,
+        'pending_totals': pending_totals_dict,
+    }
+    
     return render(request, 'records/income_list.html', context)
 
 @login_required
