@@ -4,9 +4,12 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('apps.records.urls')),  # 将所有应用的路由包含进来
-    path('accounts/', include('django.contrib.auth.urls')),  # 添加这一行
-    path('accounts/', include('apps.accounts.urls')),  # 更新这里
-    path('', include('apps.reports.urls')),  # 将所有应用的路由包含进来
+    path('', include('apps.records.urls')),  
+    path('accounts/', include('django.contrib.auth.urls')), 
+    path('accounts/', include('apps.accounts.urls')), 
+    path('', include('apps.reports.urls')),  
 
 ]
+
+  git config --global user.email "you@example.com"
+  git config --global user.name "Your Name"
