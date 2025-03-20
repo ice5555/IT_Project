@@ -2,16 +2,72 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Finance Tracker{% endblock %}</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Finance Tracker{% endblock %}</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <!-- 自定义样式 -->
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <!-- 图标库 -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+  
+  {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <div class="container-fluid main-container">
-        {% block content %}{% endblock %}
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  {% if user.is_authenticated %}
+    <!-- 导航栏：仅在用户登录后显示 -->
+    <nav class="navbar navbar-expand-md navbar-light custom-navbar">
+      <div class="container-fluid">
+        <!-- 左侧：Logo + 品牌名 -->
+        <a class="navbar-brand d-flex align-items-center" href="{% url 'finance_app:dashboard' %}">
+          <img src="{% static 'icons/logo.svg' %}" alt="Logo" style="height: 24px;">
+          <span class="ms-2 fw-bold">Finance Tracker</span>
+        </a>
+        <!-- 移动端汉堡菜单按钮 -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <!-- 中间：导航链接 -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav mx-auto">
+            <li class="nav-item">
+              <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'finance_app:dashboard' %}">Overview</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if request.resolver_match.url_name == 'transaction_list' %}active{% endif %}" href="{% url 'finance_app:transaction_list' %}">Transactions</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if request.resolver_match.url_name == 'budget_view' %}active{% endif %}" href="{% url 'finance_app:budget_view' %}">Budget</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if request.resolver_match.url_name == 'analytics' %}active{% endif %}" href="{% url 'finance_app:analytics' %}">Analytics</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if request.resolver_match.url_name == 'account_list' %}active{% endif %}" href="{% url 'finance_app:account_list' %}">Accounts</a>
+            </li>
+
+          </ul>
+          <!-- 右侧：图标 + 用户头像 -->
+          <div class="d-flex align-items-center gap-3">
+            <a href="#" class="nav-icon"><i class="bi bi-gear"></i></a>
+            <a href="#" class="nav-icon"><i class="bi bi-bell"></i></a>
+            <img src="{% static 'images/user_avatar.png' %}" alt="User Avatar" class="rounded-circle" style="width: 28px; height: 28px;">
+          </div>
+        </div>
+      </div>
+    </nav>
+  {% endif %}
+
+  <div class="container-fluid py-3">
+    {% block content %}{% endblock %}
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- 自定义 JS -->
+  <script src="{% static 'js/main.js' %}"></script>
+  {% block extra_js %}{% endblock %}
 </body>
 </html>

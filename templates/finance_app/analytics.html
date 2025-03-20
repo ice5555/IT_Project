@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Analytics{% endblock %}
+{% block content %}
+<h1>Financial Analytics</h1>
+
+<!-- 收支趋势图 -->
+<h3>Income vs Expense (Last 30 Days)</h3>
+<canvas id="incomeExpenseChart"></canvas>
+
+<!-- 类别占比饼图 -->
+<h3>Category Breakdown</h3>
+<canvas id="categoryChart"></canvas>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    const incomeData = {{ income_data|safe }};
+    const expenseData = {{ expense_data|safe }};
+    const categoryData = {{ category_data|safe }};
+
+    // 收支趋势
+    const labels = Object.keys({...incomeData, ...expenseData}).sort();
+    const incomeValues = labels.map(date => incomeData[date] || 0);
+    const expenseValues = labels.map(date => expenseData[date] || 0);
+
+    const ctx1 = document.getElementById('incomeExpenseChart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: 'Income', data: incomeValues, borderColor: 'green', fill: false },
+                { label: 'Expense', data: expenseValues, borderColor: 'red', fill: false }
+            ]
+        },
+        options: { responsive: true }
+    });
+
+    // 类别占比饼图
+    const categories = Object.keys(categoryData);
+    const categoryValues = Object.values(categoryData);
+
+    const ctx2 = document.getElementById('categoryChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'pie',
+        data: {
+            labels: categories,
+            datasets: [{ data: categoryValues, backgroundColor: ['blue', 'red', 'green', 'orange', 'purple'] }]
+        },
+        options: { responsive: true }
+    });
+});
+</script>
+{% endblock %}

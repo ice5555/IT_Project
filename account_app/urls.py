@@ -4,9 +4,9 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('apps.records.urls')),  
+    path('auth/', include('user_auth.urls', namespace='user_auth')),
+    path('', include('finance_app.urls', namespace='finance_app')),  # 确保 finance_app 被包含
     path('user_auth/', include('django.contrib.auth.urls')), 
-    path('user_auth/', include('apps.user_auth.urls')), 
-    path('', include('apps.reports.urls')),  
+
 
 ]

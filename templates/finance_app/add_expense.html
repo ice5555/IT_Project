@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/add_transaction.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <h2 class="mb-4">{{ title }}</h2>
+
+  <div class="row">
+    <!-- 左侧：Expenses by category -->
+    <div class="col-md-3 mb-4">
+      <div class="category-container">
+        <h5 class="section-title">Expenses by category</h5>
+        <div class="icon-grid">
+          <!-- 你可以准备多组图标 -->
+          <div class="icon-item" data-cat="Food">
+            <img src="{% static 'icons/food.svg' %}" alt="Food Icon" />
+            <p>Food</p>
+          </div>
+          <div class="icon-item" data-cat="Transport">
+            <img src="{% static 'icons/transport.svg' %}" alt="Transport Icon" />
+            <p>Transport</p>
+          </div>
+          <div class="icon-item" data-cat="Shopping">
+            <img src="{% static 'icons/shopping.svg' %}" alt="Shopping Icon" />
+            <p>Shopping</p>
+          </div>
+          <div class="icon-item" data-cat="Health">
+            <img src="{% static 'icons/health.svg' %}" alt="Health Icon" />
+            <p>Health</p>
+          </div>
+          <!-- ...更多图标... -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 中间：Enter amount + note -->
+    <div class="col-md-4 mb-4">
+      <div class="amount-container mb-3">
+        <h5 class="section-title">Enter amount</h5>
+        <div class="keypad" id="keypad">
+          <button class="key">1</button>
+          <button class="key">2</button>
+          <button class="key">3</button>
+          <button class="key">4</button>
+          <button class="key">5</button>
+          <button class="key">6</button>
+          <button class="key">7</button>
+          <button class="key">8</button>
+          <button class="key">9</button>
+          <button class="key">0</button>
+          <button class="key" data-action="dot">.</button>
+          <button class="key" data-action="clear">C</button>
+        </div>
+        <div class="amount-display" id="amountDisplay">0</div>
+      </div>
+      <div class="note-container">
+        <h5 class="section-title">Add a note</h5>
+        {{ form.note }}
+      </div>
+    </div>
+
+    <!-- 右侧：Select Date (简易日历示例) -->
+    <div class="col-md-5 mb-4">
+      <div class="date-container">
+        <h5 class="section-title">Select Date</h5>
+        <div id="calendar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 最终提交表单 -->
+  <form method="POST" id="txForm" class="d-none">
+    {% csrf_token %}
+    {{ form.transaction_type }} <!-- 隐藏的 type=expense -->
+    {{ form.account }}          <!-- 也可做成下拉或另外布局 -->
+    {{ form.category }}         <!-- 隐藏，点击图标写入 -->
+    {{ form.amount }}           <!-- 隐藏，点击数字键盘写入 -->
+    {{ form.date }}             <!-- 隐藏，点击日历写入 -->
+    {{ form.note }}             <!-- 已经渲染在上面 -->
+
+    <button type="submit" class="btn btn-primary" id="submitBtn">Save</button>
+  </form>
+  
+  <!-- 显示一个自定义按钮 -->
+  <button class="btn btn-primary" onclick="document.getElementById('txForm').submit()">Save</button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ========== 1. 类别图标点击 ========== //
+document.addEventListener('DOMContentLoaded', function() {
+  const iconItems = document.querySelectorAll('.icon-item');
+  const categoryField = document.getElementById('id_category'); // Django生成: id_category
+  iconItems.forEach(item => {
+    item.addEventListener('click', function() {
+      let cat = this.getAttribute('data-cat');
+      categoryField.value = cat;
+      iconItems.forEach(i => i.classList.remove('selected'));
+      this.classList.add('selected');
+    });
+  });
+});
+
+// ========== 2. 自定义数字键盘 ========== //
+const keypad = document.getElementById('keypad');
+const amountDisplay = document.getElementById('amountDisplay');
+const amountField = document.getElementById('id_amount');
+
+keypad.addEventListener('click', function(e) {
+  if (!e.target.classList.contains('key')) return;
+  let action = e.target.getAttribute('data-action');
+  let currentVal = amountDisplay.textContent;
+
+  if (!action) {
+    // 普通数字
+    if (currentVal === '0') currentVal = '';
+    amountDisplay.textContent = currentVal + e.target.textContent;
+  } else if (action === 'dot') {
+    if (!currentVal.includes('.')) {
+      amountDisplay.textContent = currentVal + '.';
+    }
+  } else if (action === 'clear') {
+    amountDisplay.textContent = '0';
+  }
+  
+  // 同步到隐藏的表单字段
+  amountField.value = amountDisplay.textContent;
+});
+
+// ========== 3. 简易日历 ========== //
+const dateField = document.getElementById('id_date');
+const calendarEl = document.getElementById('calendar');
+
+// 生成一个简单的当前月份的日历 (你也可以改成选择其他月份 / 年份)
+function renderCalendar() {
+  let today = new Date();
+  let year = today.getFullYear();
+  let month = today.getMonth(); // 0 ~ 11
+  let firstDay = new Date(year, month, 1).getDay(); // 周几
+  let daysInMonth = new Date(year, month+1, 0).getDate();
+  
+  let html = `<div class="calendar-header">${today.toLocaleString('default', { month: 'long' })} ${year}</div>`;
+  html += `<div class="calendar-grid">`;
+  
+  // 星期标题
+  const daysOfWeek = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  daysOfWeek.forEach(d => {
+    html += `<div class="calendar-day-header">${d}</div>`;
+  });
+
+  // 空格填充
+  for(let i=0; i<firstDay; i++){
+    html += `<div class="calendar-cell empty"></div>`;
+  }
+  
+  // 填充日期
+  for(let d=1; d <= daysInMonth; d++){
+    html += `<div class="calendar-cell day" data-date="${year}-${('0'+(month+1)).slice(-2)}-${('0'+d).slice(-2)}">${d}</div>`;
+  }
+  html += `</div>`;
+  
+  calendarEl.innerHTML = html;
+
+  // 点击某一天 -> 设置表单的 date 字段
+  let dayCells = calendarEl.querySelectorAll('.day');
+  dayCells.forEach(cell => {
+    cell.addEventListener('click', function() {
+      dayCells.forEach(c => c.classList.remove('selected'));
+      this.classList.add('selected');
+      dateField.value = this.getAttribute('data-date');
+    });
+  });
+}
+
+renderCalendar();
+</script>
+{% endblock %}

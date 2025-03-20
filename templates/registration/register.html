@@ -1,8 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Sign Up - Finance Tracker{% endblock %}
-
+<!-- {% block title %}Sign Up - Finance Tracker{% endblock %} -->
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
 {% block content %}
 <div class="auth-container">
     <!-- 左侧图片区域 -->
@@ -17,7 +19,7 @@
         {{ form.errors }}
     </div>
     {% endif %}
-    
+
     <!-- 右侧表单区域 -->
     <div class="auth-form">
         <h2>Create Account! 👋</h2>

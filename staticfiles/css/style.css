@@ -1,109 +1,43 @@
-/* 设置页面背景 */
+/* style.css */
+
+/* 全局基础样式：背景、字体、标题等 */
 body {
-    background-color: #f8f9fd;
-    font-family: 'Poppins', sans-serif;
-}
-
-/* 登录 & 注册页面的容器 */
-.auth-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    max-width: 900px;
-    margin: auto;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #f8f9fa; /* Bootstrap常见灰色背景 */
+    color: #212529;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* 全局标题样式 */
+  h1, h2, h3 {
+    font-weight: 600;
+    color: #343a40;
+  }
+  
+  /* 表格基础样式 */
+  table.table {
+    background-color: #fff;
+    border-radius: 5px;
     overflow: hidden;
-}
-
-/* 左侧图片部分 */
-.auth-image {
-    flex: 1;
-    background: #eef2ff;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 40px;
-    text-align: center;
-}
-
-.auth-image img {
-    width: 80%;
-    margin-bottom: 20px;
-}
-
-/* 右侧表单部分 */
-.auth-form {
-    flex: 1;
-    padding: 50px;
-}
-
-h2 {
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-p {
-    font-size: 14px;
-    color: #6c757d;
-}
-
-/* 表单样式 */
-form {
-    margin-top: 20px;
-}
-
-label {
-    display: block;
-    font-size: 14px;
-    font-weight: bold;
-    margin-top: 10px;
-}
-
-input {
-    width: 100%;
-    padding: 10px;
-    margin-top: 5px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
-/* 登录 & 注册按钮 */
-button {
-    width: 100%;
-    padding: 10px;
-    margin-top: 20px;
-    border: none;
-    border-radius: 5px;
-    background: #4A90E2;
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-button:hover {
-    background: #357ABD;
-}
-
-/* 忘记密码 */
-.forgot-password {
-    display: block;
-    text-align: right;
-    margin-top: 10px;
-    font-size: 12px;
-    color: #4A90E2;
-}
-
-/* 切换到登录/注册 */
-.auth-switch {
-    text-align: center;
-    margin-top: 15px;
-}
-
-.auth-switch a {
-    color: #4A90E2;
-    font-weight: bold;
-}
+  }
+  
+  table.table thead {
+    background-color: #e9ecef;
+  }
+  
+  table.table th {
+    font-weight: 600;
+    color: #495057;
+  }
+  
+  /* 设置容器默认边距 */
+  .container, .container-fluid {
+    padding: 2rem;
+  }
+  
+  /* 左侧导航（如果你是固定的侧边栏布局，可以在这里写） */
+  .navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  

@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  {% if transaction_type == 'income' %}
+    Add Income
+  {% else %}
+    Add Expense
+  {% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/add_transaction.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <!-- 动态标题 -->
+  <h2 class="mb-4">
+    {% if transaction_type == 'income' %}
+      Add Income
+    {% else %}
+      Add Expense
+    {% endif %}
+  </h2>
+
+  <!-- 可见UI: Account下拉 + 类别图标 + 数字键盘 + 自定义日历 -->
+  <div class="row">
+    <!-- 左侧：Category Icons -->
+    <div class="col-md-3 mb-4 card-container">
+      <div class="card">
+        <h5 class="section-title p-3">{% if transaction_type == 'income' %} Income by category {% else %} Expenses by category {% endif %}</h5>
+        <div class="icon-grid p-3" id="visibleCategoryGrid">
+          {% for cat in form.category.field.queryset %}
+            <div class="icon-item" data-cat="{{ cat.id }}">
+              <div class="icon-circle">
+                <img src="{% static cat.get_icon_url %}" alt="{{ cat.name }}">
+              </div>
+              <p>{{ cat.name }}</p>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- 中间：Account选择 + 数字键盘 + Note -->
+    <div class="col-md-4 mb-4 card-container">
+        <div class="card p-3">
+          <div class="mb-3">
+            <label>Select Account</label>
+            <select class="form-control rounded-input" id="visibleAccountSelect">
+              {% for acc in form.account.field.queryset %}
+                <option value="{{ acc.id }}">{{ acc.name }} ({{ acc.get_account_type_display }})</option>
+              {% endfor %}
+            </select>
+          </div>
+  
+          <div class="mb-3">
+            <h5 class="section-title">Enter amount</h5>
+            <div class="keypad" id="keypad">
+              <button class="key">1</button>
+              <button class="key">2</button>
+              <button class="key">3</button>
+              <button class="key">4</button>
+              <button class="key">5</button>
+              <button class="key">6</button>
+              <button class="key">7</button>
+              <button class="key">8</button>
+              <button class="key">9</button>
+              <button class="key">0</button>
+              <button class="key" data-action="dot">.</button>
+              <button class="key clear-key" data-action="clear">C</button>
+            </div>
+            <div class="amount-display rounded-input" id="amountDisplay">0</div>
+          </div>
+  
+         
+        </div>
+      </div>
+  
+      <!-- 右侧：自定义日历 -->
+      <div class="col-md-5 mb-4 card-container">
+        <div class="card p-3">
+          <h5 class="section-title">Select Date</h5>
+          <div id="calendar" class="calendar-container"></div>
+          <div class="mb-3">
+            <h5 class="section-title">Add a note</h5>
+            {{ form.note }}
+          </div>
+        </div>
+    
+      </div>
+
+    </div>
+  
+      <!-- 如果有错误, 显示错误信息 -->
+  {% if form.errors %}
+  <div class="alert alert-danger">
+    {{ form.errors }}
+  </div>
+{% endif %}
+    <button class="btn btn-primary save-btn" id="saveBtn">Save</button>
+  </div>
+
+  <!-- 隐藏表单 (Django实际提交) -->
+  <form method="POST" id="hiddenForm" class="d-none">
+    {% csrf_token %}
+    {{ form.transaction_type }}  <!-- 隐藏字段: 'income' or 'expense' -->
+
+    <!-- 下列字段我们不再用 Django自动生成的HTML，而是手动写hidden -->
+    <input type="hidden" name="account" id="hiddenAccountField" />
+    <input type="hidden" name="category" id="hiddenCategoryField" />
+    <input type="hidden" name="amount" id="hiddenAmountField" />
+    <input type="hidden" name="date" id="hiddenDateField" />
+
+    <!-- Note字段可以直接用 form.note, 也可隐藏后再用JS同步 -->
+    <!-- 这里我们保留 form.note 在UI中可见, Django会自动生成 <textarea> with name='note' -->
+
+    <button type="submit"></button> <!-- 用JS点击提交 -->
+  </form>
+
+
+
+  <!-- 保存按钮 -->
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ==================== 0. 全局获取隐藏字段 ==================== //
+const hiddenAccountField = document.getElementById('hiddenAccountField');
+const hiddenCategoryField = document.getElementById('hiddenCategoryField');
+const hiddenAmountField = document.getElementById('hiddenAmountField');
+const hiddenDateField = document.getElementById('hiddenDateField');
+
+// ==================== 1. Category Icons ==================== //
+document.querySelectorAll('.icon-item').forEach(icon => {
+  icon.addEventListener('click', function(){
+    // 清除选中样式
+    document.querySelectorAll('.icon-item').forEach(i => i.classList.remove('selected'));
+    this.classList.add('selected');
+    // 将 data-cat 的值赋给 hiddenCategoryField
+    hiddenCategoryField.value = this.dataset.cat;
+  });
+});
+
+// ==================== 2. Account 下拉框 ==================== //
+const visibleAccountSelect = document.getElementById('visibleAccountSelect');
+visibleAccountSelect.addEventListener('change', function(){
+  hiddenAccountField.value = this.value; 
+});
+// 页面加载后先同步一次
+hiddenAccountField.value = visibleAccountSelect.value;
+
+// ==================== 3. Number Keypad ==================== //
+const keypad = document.getElementById('keypad');
+const amountDisplay = document.getElementById('amountDisplay');
+keypad.addEventListener('click', function(e){
+  if(!e.target.classList.contains('key')) return;
+  let action = e.target.getAttribute('data-action');
+  let cur = amountDisplay.textContent;
+  if(!action){
+    if(cur === '0') cur = '';
+    amountDisplay.textContent = cur + e.target.textContent;
+  } else if(action === 'dot'){
+    if(!cur.includes('.')){
+      amountDisplay.textContent = cur + '.';
+    }
+  } else if(action === 'clear'){
+    amountDisplay.textContent = '0';
+  }
+  // 同步到隐藏字段
+  hiddenAmountField.value = amountDisplay.textContent;
+});
+// 初始值
+hiddenAmountField.value = amountDisplay.textContent;
+
+// ==================== 4. Custom Calendar ==================== //
+const calendar = document.getElementById('calendar');
+function renderCalendar(year, month){
+  // 简易渲染
+  const date = new Date(year, month, 1);
+  const firstDay = date.getDay();
+  const lastDate = new Date(year, month+1, 0).getDate();
+  let html = `<div class="cal-header d-flex justify-content-between align-items-center">
+                <span>${date.toLocaleString('default', {month:'long'})} ${year}</span>
+                <div>
+                  <button class="btn btn-sm btn-light" id="prevMonthBtn">&laquo;</button>
+                  <button class="btn btn-sm btn-light" id="nextMonthBtn">&raquo;</button>
+                </div>
+              </div>`;
+  html += `<div class="cal-grid">`;
+  const daysOfWeek = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  daysOfWeek.forEach(d => html += `<div class="cal-day-header">${d}</div>`);
+  for(let i=0; i<firstDay; i++){
+    html += `<div class="cal-cell empty"></div>`;
+  }
+  for(let d=1; d<=lastDate; d++){
+    html += `<div class="cal-cell day" data-date="${year}-${('0'+(month+1)).slice(-2)}-${('0'+d).slice(-2)}">${d}</div>`;
+  }
+  html += `</div>`;
+  calendar.innerHTML = html;
+
+  // 点击日期 => 赋值 hiddenDateField
+  calendar.querySelectorAll('.day').forEach(cell => {
+    cell.addEventListener('click', function(){
+      calendar.querySelectorAll('.day').forEach(c => c.classList.remove('selected'));
+      this.classList.add('selected');
+      hiddenDateField.value = this.dataset.date;
+    });
+  });
+
+  // 切换月份
+  document.getElementById('prevMonthBtn').addEventListener('click', () => {
+    let newMonth = month===0 ? 11 : month-1;
+    let newYear = month===0 ? year-1 : year;
+    renderCalendar(newYear, newMonth);
+  });
+  document.getElementById('nextMonthBtn').addEventListener('click', () => {
+    let newMonth = month===11 ? 0 : month+1;
+    let newYear = month===11 ? year+1 : year;
+    renderCalendar(newYear, newMonth);
+  });
+}
+
+let today = new Date();
+renderCalendar(today.getFullYear(), today.getMonth());
+
+// ==================== 5. Save Button => 提交隐藏表单 ==================== //
+document.getElementById('saveBtn').addEventListener('click', function(){
+  // 如果 note 也要自定义UI, 需要在此处同步 note => hiddenNoteField.value = ...
+  // 但你使用了 form.note => Django 已经渲染 <textarea name="note" ...> => OK
+
+  document.getElementById('hiddenForm').submit();
+});
+</script>
+{% endblock %}

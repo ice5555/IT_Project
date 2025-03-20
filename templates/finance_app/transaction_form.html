@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Transaction Form{% endblock %}
+{% block content %}
+<h2>{% if form.instance.pk %}Edit{% else %}Create{% endif %} Transaction</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">Save</button>
+    <a href="{% url 'finance_app:transaction_list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

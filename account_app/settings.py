@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+from celery.schedules import crontab
 
 
 
@@ -59,10 +60,8 @@ INSTALLED_APPS = [
 
     'rest_framework',
 
-    'apps.budget',
-    'apps.records',
-    'apps.reports',
-    'apps.user_auth',
+    'finance_app',
+    'user_auth',
 ]
 
 MIDDLEWARE = [
@@ -166,9 +165,23 @@ REST_FRAMEWORK = {
 LOGIN_URL = 'login'
 
 # 设置登录后重定向的URL
-LOGIN_REDIRECT_URL = 'transaction_list'
+LOGIN_REDIRECT_URL = 'finance_app:transaction_list'  # 用命名空间修复
 
 # 设置注销后重定向的URL
 LOGOUT_REDIRECT_URL = 'login'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+
+# Celery 配置
+CELERY_BROKER_URL = 'redis://localhost:6379/0'  # 使用 Redis 作为消息队列
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+
+# Celery Beat 定时任务配置
+CELERY_BEAT_SCHEDULE = {
+    'check-budget-every-day': {
+        'task': 'finance_app.tasks.check_all_users_budget',
+        'schedule': crontab(hour=0, minute=0),  # 每天 00:00 执行
+    },
+}

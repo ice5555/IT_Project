@@ -12,6 +12,10 @@ urlpatterns = [
     path('transactions/add_expense/', views.add_expense, name='add_expense'),
     path('budget/set/', views.budget_money, name='budget_money'),
     
+    path('budget/', views.budget_view, name='budget_view'),  # 预算主页
+    path('budget/add/', views.add_budget, name='add_budget'),  # 添加预算
+
+
     path('accounts/', views.account_list, name='account_list'),
     path('accounts/create/', views.account_create, name='account_create'),
     path('accounts/<int:pk>/edit/', views.account_edit, name='account_edit'),

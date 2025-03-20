@@ -1,0 +1,101 @@
+/* Global Styles */
+body {
+    background-color: #f8f9fa;
+    font-family: 'Open Sans', sans-serif;
+    color: #343a40;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Container & Layout */
+  .container-fluid {
+    padding: 1rem;
+  }
+  
+  /* Dashboard Greeting */
+  .row.mb-4 h3 {
+    font-size: 1.75rem;
+    color: #343a40;
+  }
+  
+  /* Time Filter Buttons */
+  .btn-time {
+    background-color: #e9ecef;
+    border: none;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    margin: 0 0.25rem;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  .btn-time.active,
+  .btn-time:hover {
+    background-color: #007bff;
+    color: #fff;
+  }
+  
+  /* Cards */
+  .card {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* Money Text */
+  .money-text {
+    font-size: 2rem;
+    font-weight: bold;
+  }
+  .money-text.positive {
+    color: #28a745;
+  }
+  .money-text.negative {
+    color: #dc3545;
+  }
+  
+  /* Icon Container */
+  .icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #f1f3f5;
+  }
+  .bg-light-green {
+    background-color: #d4edda;
+  }
+  .bg-light-red {
+    background-color: #f8d7da;
+  }
+  .bg-light-blue {
+    background-color: #d1ecf1;
+  }
+  
+  /* Chart Container */
+  .chart-container {
+    position: relative;
+    height: 300px;
+  }
+  
+  /* Table Styling */
+  .table-hover tbody tr:hover {
+    background-color: #f1f3f5;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .money-text {
+      font-size: 1.5rem;
+    }
+    .btn-time {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.9rem;
+    }
+  }
+  

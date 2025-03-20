@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %} Add Budget {% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Add Budget</h2>
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="mb-3">
+            <label for="id_category" class="form-label">Category</label>
+            {{ form.category }}
+        </div>
+        
+        <div class="mb-3">
+            <label for="id_amount" class="form-label">Budget Amount</label>
+            {{ form.amount }}
+        </div>
+        
+        <div class="mb-3">
+            <label for="id_threshold" class="form-label">Alert Threshold (%)</label>
+            {{ form.threshold }}
+        </div>
+        
+        <div class="mb-3">
+            <label for="id_start_date" class="form-label">Start Date</label>
+            {{ form.start_date }}
+        </div>
+        
+        <div class="mb-3">
+            <label for="id_end_date" class="form-label">End Date</label>
+            {{ form.end_date }}
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+</div>
+{% endblock %}

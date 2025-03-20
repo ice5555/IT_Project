@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Accounts{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Your Accounts</h2>
+    <a href="{% url 'finance_app:account_create' %}" class="btn btn-primary mb-3">Create New Account</a>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Balance</th>
+                <th>Type</th>
+                <th>Currency</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for account in accounts %}
+            <tr>
+                <td>{{ account.name }}</td>
+                <td>£{{ account.balance|floatformat:2 }}</td>
+                <td>{{ account.account_type }}</td>
+                <td>{{ account.get_currency_display }}</td>
+                <td>
+                    <a href="{% url 'finance_app:account_edit' account.pk %}" class="btn btn-warning btn-sm">Edit</a>
+                    <a href="{% url 'finance_app:account_delete' account.pk %}" class="btn btn-danger btn-sm">Delete</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-center">No accounts found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

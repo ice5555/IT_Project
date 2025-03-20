@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Delete Transaction{% endblock %}
+{% block content %}
+<h2>Are you sure you want to delete this transaction?</h2>
+<p>{{ transaction.date|date:"Y-m-d" }} - {{ transaction.category }}: {{ transaction.amount }}</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Yes, Delete</button>
+    <a href="{% url 'finance_app:transaction_list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

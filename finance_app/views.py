@@ -3,6 +3,8 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
+from django.db.models import Sum
+
 from .models import Account, Transaction, Budget
 from .forms import AccountForm, TransactionForm, BudgetForm
 from datetime import timedelta
@@ -27,6 +29,12 @@ def dashboard(request):
     total_budget = sum(b.amount for b in Budget.objects.filter(user=user))
     budget_remaining = total_budget - total_expense
 
+    category_distribution = {}
+    expense_txs = Transaction.objects.filter(user=user, transaction_type='expense')
+    for tx in expense_txs:
+        cat_name = tx.category.name if tx.category else "Others"
+        category_distribution[cat_name] = category_distribution.get(cat_name, 0) + float(tx.amount)
+
     context = {
         'accounts': accounts,
         'total_balance': total_balance,
@@ -34,6 +42,8 @@ def dashboard(request):
         'total_income': total_income,
         'total_expense': total_expense,
         'budget_remaining': budget_remaining,
+        # 一定要把这个传给模板
+        'category_distribution': category_distribution,
     }
     return render(request, 'finance_app/overview.html', context)
 
@@ -147,16 +157,10 @@ def dashboard_filter_ajax(request):
     total_income = 0
     total_expense = 0
     category_distribution = {}
-
-    for tx in transactions:
-        if tx.transaction_type == 'income':
-            total_income += tx.amount
-        else:
-            total_expense += tx.amount
-            # 更新分类统计
-            cat = tx.category or "Others"
-            category_distribution[cat] = category_distribution.get(cat, 0) + float(tx.amount)
-
+    expense_txs = Transaction.objects.filter(user=user, transaction_type='expense')
+    for tx in expense_txs:
+        cat_name = tx.category.name if tx.category else "Others"
+        category_distribution[cat_name] = category_distribution.get(cat_name, 0) + float(tx.amount)
     # 最近 5 条交易
     recent_transactions = transactions.order_by('-date')[:5]
 
@@ -214,20 +218,6 @@ def add_expense(request):
         'form': form,
         'title': 'Add Expense',
     })
-
-
-@login_required
-def budget_money(request):
-    if request.method == 'POST':
-        form = BudgetForm(request.POST)
-        if form.is_valid():
-            budget = form.save(commit=False)
-            budget.user = request.user
-            budget.save()
-            return redirect('finance_app:dashboard')
-    else:
-        form = BudgetForm()
-    return render(request, 'finance_app/budget_form.html', {'form': form, 'title': 'Set Budget'})
 
 
 
@@ -330,3 +320,104 @@ def add_transaction(request, tx_type):
         'transaction_type': tx_type,
     }
     return render(request, 'finance_app/add_transaction.html', context)
+
+
+
+@login_required
+def budget_money(request):
+    if request.method == 'POST':
+        form = BudgetForm(request.POST)
+        if form.is_valid():
+            budget = form.save(commit=False)
+            budget.user = request.user
+            budget.save()
+            return redirect('finance_app:dashboard')
+    else:
+        form = BudgetForm()
+    return render(request, 'finance_app/budget_form.html', {'form': form, 'title': 'Set Budget'})
+
+
+
+
+
+@login_required
+def budget_list(request):
+    user = request.user
+    budgets = Budget.objects.filter(user=user)
+
+    budget_info_list = []
+    for b in budgets:
+        # 计算 spent
+        expense_qs = Transaction.objects.filter(
+            user=user,
+            transaction_type='expense',
+            date__range=(b.start_date, b.end_date)
+        )
+        # 如果 b.account 不为空，就只统计对应 account
+        if b.account:
+            expense_qs = expense_qs.filter(account=b.account)
+        spent = expense_qs.aggregate(total=Sum('amount'))['total'] or 0
+        remaining = b.amount - spent
+        progress = int((spent / b.amount) * 100) if b.amount > 0 else 0
+        budget_info_list.append({
+            'budget': b,
+            'spent': spent,
+            'remaining': remaining,
+            'progress': progress,
+        })
+
+    return render(request, 'finance_app/budget_list.html', {
+        'budget_info_list': budget_info_list
+    })
+
+
+
+@login_required
+def budget_view(request):
+    user = request.user
+    budgets = Budget.objects.filter(user=user)
+    current_month = timezone.now().replace(day=1)
+
+    # 获取每个类别的支出
+    expenses_by_category = Transaction.objects.filter(
+        user=user, transaction_type="expense", date__gte=current_month
+    ).values('category__name').annotate(total_spent=Sum('amount'))
+
+    # 计算预算使用情况
+    budget_progress = []
+    for budget in budgets:
+        spent = next((e['total_spent'] for e in expenses_by_category if e['category__name'] == budget.category.name), 0)
+        progress = (spent / budget.amount) * 100 if budget.amount > 0 else 0
+        budget_progress.append({
+            "category": budget.category.name,
+            "budget": budget.amount,
+            "spent": spent,
+            "progress": min(progress, 100),  # 限制最大100%
+            "exceeded": spent > budget.amount
+        })
+
+    return render(request, "finance_app/budget.html", {
+        "budgets": budgets,
+        "budget_progress": budget_progress,
+        "form": BudgetForm(),
+    })
+
+@login_required
+def add_budget(request):
+    if request.method == 'POST':
+        form = BudgetForm(request.POST, user=request.user)  # 这里必须传入 user
+        if form.is_valid():
+            budget = form.save(commit=False)
+            budget.user = request.user  # 绑定当前用户
+            budget.save()
+            return redirect('finance_app:budget_view')  # 重定向到预算管理页面
+        else:
+            print(form.errors)  # 🔴 这一步调试：打印表单错误
+    else:
+        form = BudgetForm()
+
+    return render(request, 'finance_app/add_budget.html', {'form': form})
+
+
+
+

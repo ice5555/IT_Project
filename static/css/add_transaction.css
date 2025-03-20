@@ -1,0 +1,161 @@
+/* 布局与样式 */
+.section-title {
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+.card-container {
+  display: flex;
+  justify-content: center;
+}
+.card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  width: 100%;
+}
+
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+.icon-item {
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.icon-circle {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #f8f9fa;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+}
+.icon-circle:hover {
+  background: #e9ecef;
+}
+.icon-item img {
+  width: 48px;
+  height: 48px;
+}
+.icon-item:hover {
+  background-color: #e9ecef;
+}
+.icon-item.selected {
+  border-color: #007bff;
+  background-color: #dbeafe;
+}
+
+
+
+.rounded-input {
+  border: none;
+  border-bottom: 2px solid #ddd;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+}
+.save-btn {
+  padding: 12px 24px;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  background: linear-gradient(45deg, #007bff, #007bff);
+  transition: all 0.3s;
+}
+.save-btn:hover {
+  background: #0056b3;
+}
+
+/* 中间 - 数字键盘 */
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  /* margin-bottom: 0.5rem; */
+}
+.key {
+  padding: 1rem;
+  text-align: center;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #f1f3f5;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+}
+.key:hover {
+  background: #dbeafe;
+}
+.key:active {
+  transform: scale(0.95);
+}
+.clear-key {
+  background: #ff4d4d;
+  color: white;
+}
+.amount-display {
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  padding: 0.5rem;
+  font-size: 1.5rem;
+  text-align: right;
+}
+
+/* 右侧 - 自定义日历 */
+.calendar-container {
+  background-color: #fff;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  padding: 1rem;
+}
+.cal-header {
+  margin-bottom: 0.5rem;
+}
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.cal-day-header {
+  font-weight: bold;
+  text-align: center;
+}
+.cal-cell {
+  background-color: #f8f9fa;
+  text-align: center;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+.cal-cell.day {
+  cursor: pointer;
+}
+.cal-cell.day:hover {
+  background-color: #e2e6ea;
+}
+.cal-cell.day.selected {
+  background-color: #007bff;
+  color: #fff;
+}
+.cal-cell.empty {
+  background-color: transparent;
+  cursor: default;
+}
+
+/* 调整小屏效果 */
+@media (max-width: 768px) {
+  .icon-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .key {
+    padding: 0.75rem;
+  }
+  .amount-display {
+    font-size: 1.2rem;
+  }
+}

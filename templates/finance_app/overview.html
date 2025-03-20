@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <!-- 标题 & 用户问候 -->
+  <div class="row mb-4">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <h3 class="fw-bold">Hello, {{ user.username }}!</h3>
+        <div class="d-flex align-items-center">
+            <div class="btn-group" id="timeFilterGroup">
+                <button class="btn btn-time active">This month</button>
+                <button class="btn btn-time">Last month</button>
+                <button class="btn btn-time">This year</button>
+                <button class="btn btn-time">Last 12 months</button>
+            </div>
+            <button class="btn btn-select-period">
+                <i class="bi bi-calendar"></i> Select period
+            </button>
+        </div>
+    </div>
+  </div>
+
+  <!-- 数据展示卡片 -->
+  <div class="row g-3">
+    <!-- Balance -->
+    <div class="col-md-3">
+        <div class="card shadow-sm p-3">
+            <p class="text-muted mb-1">Balance</p>
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="money-text">£{{ total_balance|floatformat:2 }}</h2>
+                <span class="badge percentage-change positive">↑ 12.5%</span>
+            </div>
+        </div>
+    </div>
+    <!-- Income -->
+    <div class="col-md-3">
+        <div class="card shadow-sm p-3">
+            <p class="text-muted mb-1">Income</p>
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="money-text" id="incomeValue">£{{ total_income|floatformat:2 }}</h2>
+                <span class="badge percentage-change positive">↑ 27%</span>
+            </div>
+        </div>
+    </div>
+    <!-- Expenses -->
+    <div class="col-md-3">
+        <div class="card shadow-sm p-3">
+            <p class="text-muted mb-1">Expenses</p>
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="money-text negative" id="expenseValue">£{{ total_expense|floatformat:2 }}</h2>
+                <span class="badge percentage-change negative">↓ 15%</span>
+            </div>
+        </div>
+    </div>
+    <!-- Budget Remaining -->
+    <div class="col-md-3">
+        <div class="card shadow-sm p-3">
+            <p class="text-muted mb-1">Budget Remaining</p>
+            <h2 class="money-text">£{{ budget_remaining|floatformat:2 }}</h2>
+        </div>
+    </div>
+  </div>
+
+  <!-- 快捷操作卡片 -->
+  <div class="row mt-3 g-3">
+    <div class="col-md-4">
+        <a href="{% url 'finance_app:add_transaction' 'income' %}" class="card shadow-sm p-3 text-decoration-none">
+            <div class="d-flex align-items-center">
+                <div class="icon-container bg-light-green">
+                    <img src="{% static 'icons/income.svg' %}" alt="Income Icon">
+                </div>
+                <div class="ms-3">
+                    <h6 class="mb-0">Add Income</h6>
+                    <p class="text-muted small">Create an income manually</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a href="{% url 'finance_app:add_transaction' 'expense' %}" class="card shadow-sm p-3 text-decoration-none">
+            <div class="d-flex align-items-center">
+                <div class="icon-container bg-light-red">
+                    <img src="{% static 'icons/expense.svg' %}" alt="Expense Icon">
+                </div>
+                <div class="ms-3">
+                    <h6 class="mb-0">Add Expense</h6>
+                    <p class="text-muted small">Create an expense manually</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a href="{% url 'finance_app:add_budget' %}" class="card shadow-sm p-3 text-decoration-none">
+            <div class="d-flex align-items-center">
+                <div class="icon-container bg-light-blue">
+                    <img src="{% static 'icons/budget.svg' %}" alt="Budget Icon">
+                </div>
+                <div class="ms-3">
+                    <h6 class="mb-0">Budget Money</h6>
+                    <p class="text-muted small">Budget your income and expenses</p>
+                </div>
+            </div>
+        </a>
+    </div>
+  </div>
+
+  <!-- 分析与交易记录 -->
+  <div class="row mt-4 g-3">
+    <!-- 左侧：类别饼图 -->
+    <div class="col-md-4">
+      <div class="card shadow-sm p-3">
+        <h5 class="card-title">Expenses by Category</h5>
+        <div class="chart-container">
+          <canvas id="categoryChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <!-- 右侧：最近交易记录 -->
+    <div class="col-md-8">
+      <div class="card shadow-sm p-3">
+        <h5 class="card-title">Last Transactions</h5>
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>Method</th>
+              <th>Date</th>
+              <th class="text-end">Amount</th>
+            </tr>
+          </thead>
+          <tbody id="lastTxTableBody">
+            {% for tx in recent_transactions %}
+            <tr>
+              <td>
+                {% if tx.category == "Salary" %}
+                  💰
+                {% elif tx.category == "Food" %}
+                  🍔
+                {% elif tx.category == "Transport" %}
+                  🚗
+                {% else %}
+                  🔹
+                {% endif %}
+                {{ tx.category }}
+              </td>
+              <td>{{ tx.account.name }}</td>
+              <td>{{ tx.date|date:"Y-m-d" }}</td>
+              <td class="text-end">
+                {% if tx.transaction_type == 'expense' %}
+                  <span class="money-text negative">£{{ tx.amount|floatformat:2 }}</span>
+                {% else %}
+                  <span class="money-text positive">£{{ tx.amount|floatformat:2 }}</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-center">No transactions found.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始化类别饼图，并存入全局变量以便更新
+    const ctx = document.getElementById('categoryChart').getContext('2d');
+    window.categoryChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys({{ category_distribution|safe }}),
+            datasets: [{
+                data: Object.values({{ category_distribution|safe }}),
+                backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545', '#17a2b8'],
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+
+    // 设置时间筛选按钮事件
+    const timeFilterButtons = document.querySelectorAll(".btn-time");
+    timeFilterButtons.forEach(btn => {
+        btn.addEventListener("click", function() {
+            timeFilterButtons.forEach(b => b.classList.remove("active"));
+            this.classList.add("active");
+            const range = this.textContent.replace(/\s/g, '_').toLowerCase();
+            fetch(`{% url 'finance_app:dashboard_filter_ajax' %}?range=${range}`)
+                .then(response => response.json())
+                .then(data => {
+                    updateDashboard(data);
+                });
+        });
+    });
+});
+
+// 更新仪表板数据的函数
+function updateDashboard(data) {
+    document.getElementById("incomeValue").textContent = `£${data.total_income.toFixed(2)}`;
+    document.getElementById("expenseValue").textContent = `£${data.total_expense.toFixed(2)}`;
+    updatePieChart(data.category_distribution);
+    
+    // 更新最近交易表格
+    const tbody = document.getElementById("lastTxTableBody");
+    tbody.innerHTML = "";
+    data.recent_transactions.forEach(tx => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${tx.category}</td>
+          <td>${tx.account}</td>
+          <td>${tx.date}</td>
+          <td class="text-end">${tx.amount < 0 ? 
+              '<span class="money-text negative">£' + tx.amount.toFixed(2) + '</span>' 
+              : '<span class="money-text positive">£' + tx.amount.toFixed(2) + '</span>'}
+          </td>`;
+        tbody.appendChild(row);
+    });
+}
+
+// 更新饼图数据
+function updatePieChart(categoryDist) {
+    const labels = Object.keys(categoryDist);
+    const values = Object.values(categoryDist);
+    window.categoryChart.data.labels = labels;
+    window.categoryChart.data.datasets[0].data = values;
+    window.categoryChart.update();
+}
+</script>
+{% endblock %}
