@@ -1,0 +1,31 @@
+# apps/user_auth/urls.py
+
+from django.urls import path
+from . import views
+
+app_name = 'finance_app'
+
+urlpatterns = [
+    path('dashboard/', views.dashboard, name='dashboard'),
+    path('dashboard/filter_ajax/', views.dashboard_filter_ajax, name='dashboard_filter_ajax'),
+    path('transactions/add_income/', views.add_income, name='add_income'),
+    path('transactions/add_expense/', views.add_expense, name='add_expense'),
+    path('budget/set/', views.budget_money, name='budget_money'),
+    
+    path('accounts/', views.account_list, name='account_list'),
+    path('accounts/create/', views.account_create, name='account_create'),
+    path('accounts/<int:pk>/edit/', views.account_edit, name='account_edit'),
+    path('accounts/<int:pk>/delete/', views.account_delete, name='account_delete'),
+
+    path('transactions/', views.transaction_list, name='transaction_list'),
+    path('transactions/create/', views.transaction_create, name='transaction_create'),
+    path('transactions/<int:pk>/edit/', views.transaction_edit, name='transaction_edit'),
+    path('transactions/<int:pk>/delete/', views.transaction_delete, name='transaction_delete'),
+    
+    path('analytics/', views.analytics, name='analytics'),
+
+    path('add-transaction/<str:tx_type>/', views.add_transaction, name='add_transaction'),
+
+    # AJAX
+    path('transactions/filter_ajax/', views.transaction_filter_ajax, name='transaction_filter_ajax'),
+]
