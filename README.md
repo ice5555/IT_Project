@@ -13,7 +13,7 @@ Personal Finance Tracker is a web application that helps users manage their inco
 
 ## **Technology Stack**  
 - **Backend**: Django, Python  
-- **Frontend**: HTML, CSS, JavaScript, AJAX  
+- **Frontend**: HTML, CSS, JavaScript, jQuery, AJAX  
 - **Database**: SQLite (supports PostgreSQL/MySQL migration)  
 - **Visualization**: Chart.js  
 - **Task Queue**: Celery + Redis  
