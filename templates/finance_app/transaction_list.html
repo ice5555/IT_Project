@@ -7,7 +7,6 @@
 <div class="container mt-4">
     <h2 class="mb-4">Transactions</h2>
 
-    <!-- 在表单中添加 action，指向 transactions URL -->
     <form method="get" action="{% url 'finance_app:transactions' %}" class="card p-3 shadow-sm mb-4">
         <div class="row g-2">
             <div class="col-md-2">
@@ -77,7 +76,6 @@
     </table>
 </div>
 
-<!-- 交易详情模态框 -->
 <div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">

@@ -152,7 +152,7 @@ def transaction_list(request):
     context = {
         "transactions": transactions,
         "accounts": Account.objects.filter(user=user),
-        "categories": Category.objects.all(),  # 或者按需过滤
+        "categories": Category.objects.all(),  
     }
     return render(request, "finance_app/transaction_list.html", context)
 
