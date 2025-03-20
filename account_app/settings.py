@@ -62,7 +62,7 @@ INSTALLED_APPS = [
     'apps.budget',
     'apps.records',
     'apps.reports',
-    'apps.accounts',
+    'apps.user_auth',
 ]
 
 MIDDLEWARE = [

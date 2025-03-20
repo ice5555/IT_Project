@@ -1,4 +1,4 @@
-# apps/accounts/views.py
+# apps/user_auth/views.py
 from django.contrib.auth import login
 from django.shortcuts import render, redirect
 from .forms import UserRegistrationForm
@@ -9,7 +9,7 @@ def register(request):
         if form.is_valid():
             user = form.save()
             login(request, user)  # 注册成功后自动登录
-            return redirect('/accounts/login/')
+            return redirect('/user_auth/login/')
     else:
         form = UserRegistrationForm()
     
