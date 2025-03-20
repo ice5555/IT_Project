@@ -20,9 +20,9 @@
                 <button class="btn btn-time">This year</button>
                 <button class="btn btn-time">Last 12 months</button>
             </div>
-            <button class="btn btn-select-period">
-                <i class="bi bi-calendar"></i> Select period
-            </button>
+            <!-- <button class="btn btn-select-period"> -->
+                <!-- <i class="bi bi-calendar"></i> Select period -->
+            <!-- </button> -->
         </div>
     </div>
   </div>
@@ -34,8 +34,7 @@
         <div class="card shadow-sm p-3">
             <p class="text-muted mb-1">Balance</p>
             <div class="d-flex justify-content-between align-items-center">
-                <h2 class="money-text">£{{ total_balance|floatformat:2 }}</h2>
-                <span class="badge percentage-change positive">↑ 12.5%</span>
+                <h2 class="money-text" id="balanceValue">£{{ total_balance|floatformat:2 }}</h2>
             </div>
         </div>
     </div>
@@ -45,7 +44,6 @@
             <p class="text-muted mb-1">Income</p>
             <div class="d-flex justify-content-between align-items-center">
                 <h2 class="money-text" id="incomeValue">£{{ total_income|floatformat:2 }}</h2>
-                <span class="badge percentage-change positive">↑ 27%</span>
             </div>
         </div>
     </div>
@@ -55,7 +53,6 @@
             <p class="text-muted mb-1">Expenses</p>
             <div class="d-flex justify-content-between align-items-center">
                 <h2 class="money-text negative" id="expenseValue">£{{ total_expense|floatformat:2 }}</h2>
-                <span class="badge percentage-change negative">↓ 15%</span>
             </div>
         </div>
     </div>
@@ -63,7 +60,7 @@
     <div class="col-md-3">
         <div class="card shadow-sm p-3">
             <p class="text-muted mb-1">Budget Remaining</p>
-            <h2 class="money-text">£{{ budget_remaining|floatformat:2 }}</h2>
+            <h2 class="money-text" id="budgetRemainingValue">£{{ budget_remaining|floatformat:2 }}</h2>
         </div>
     </div>
   </div>
@@ -115,7 +112,7 @@
   <div class="row mt-4 g-3">
     <!-- 左侧：类别饼图 -->
     <div class="col-md-4">
-      <div class="card shadow-sm p-3">
+      <div class="card shadow-sm p-3 h-100">
         <h5 class="card-title">Expenses by Category</h5>
         <div class="chart-container">
           <canvas id="categoryChart"></canvas>
@@ -124,7 +121,7 @@
     </div>
     <!-- 右侧：最近交易记录 -->
     <div class="col-md-8">
-      <div class="card shadow-sm p-3">
+      <div class="card shadow-sm p-3 h-100">
         <h5 class="card-title">Last Transactions</h5>
         <table class="table table-hover">
           <thead>
@@ -139,16 +136,20 @@
             {% for tx in recent_transactions %}
             <tr>
               <td>
-                {% if tx.category == "Salary" %}
+                {% if tx.category.name == "Salary" %}
                   💰
-                {% elif tx.category == "Food" %}
+                {% elif tx.category.name == "Food" %}
                   🍔
-                {% elif tx.category == "Transport" %}
+                {% elif tx.category.name == "Transport" %}
                   🚗
+                {% elif tx.category.name == " Travel" %}
+                  ✈️
+                  {% elif tx.category.name == "Shopping" %}
+                  🛍️
                 {% else %}
                   🔹
                 {% endif %}
-                {{ tx.category }}
+                {{ tx.category.name }}
               </td>
               <td>{{ tx.account.name }}</td>
               <td>{{ tx.date|date:"Y-m-d" }}</td>
@@ -175,7 +176,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 初始化类别饼图，并存入全局变量以便更新
+    // 初始化类别饼图
     const ctx = document.getElementById('categoryChart').getContext('2d');
     window.categoryChart = new Chart(ctx, {
         type: 'doughnut',
@@ -205,16 +206,20 @@ document.addEventListener('DOMContentLoaded', function() {
             fetch(`{% url 'finance_app:dashboard_filter_ajax' %}?range=${range}`)
                 .then(response => response.json())
                 .then(data => {
+                    console.log("Returned data:", data);
                     updateDashboard(data);
-                });
+                })
+                .catch(err => console.error(err));
         });
     });
 });
 
 // 更新仪表板数据的函数
 function updateDashboard(data) {
-    document.getElementById("incomeValue").textContent = `£${data.total_income.toFixed(2)}`;
-    document.getElementById("expenseValue").textContent = `£${data.total_expense.toFixed(2)}`;
+    document.getElementById("incomeValue").textContent = `£${parseFloat(data.total_income).toFixed(2)}`;
+    document.getElementById("expenseValue").textContent = `£${parseFloat(data.total_expense).toFixed(2)}`;
+    document.getElementById("balanceValue").textContent = `£${parseFloat(data.total_balance).toFixed(2)}`;
+    document.getElementById("budgetRemainingValue").textContent = `£${parseFloat(data.budget_remaining).toFixed(2)}`;
     updatePieChart(data.category_distribution);
     
     // 更新最近交易表格
@@ -227,8 +232,8 @@ function updateDashboard(data) {
           <td>${tx.account}</td>
           <td>${tx.date}</td>
           <td class="text-end">${tx.amount < 0 ? 
-              '<span class="money-text negative">£' + tx.amount.toFixed(2) + '</span>' 
-              : '<span class="money-text positive">£' + tx.amount.toFixed(2) + '</span>'}
+              '<span class="money-text negative">£' + parseFloat(tx.amount).toFixed(2) + '</span>' 
+              : '<span class="money-text positive">£' + parseFloat(tx.amount).toFixed(2) + '</span>'}
           </td>`;
         tbody.appendChild(row);
     });

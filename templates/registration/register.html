@@ -7,45 +7,62 @@
 {% endblock %}
 {% block content %}
 <div class="auth-container">
-    <!-- 左侧图片区域 -->
     <div class="auth-image">
         <img src="{% static 'images/register-illustration.png' %}" alt="Register Illustration">
         <h3>Track and Analyze Your Daily Expenses</h3>
         <p>Effortlessly record your income and spending. Get insights into your financial habits with detailed analytics and reports.</p>
     </div>
     
-    {% if form.errors %}
+    <!-- {% if form.errors %}
     <div class="alert alert-danger">
         {{ form.errors }}
     </div>
-    {% endif %}
+    {% endif %} -->
 
-    <!-- 右侧表单区域 -->
     <div class="auth-form">
         <h2>Create Account! 👋</h2>
         <p>Create an account so you can explore all the features available.</p>
 
         <form method="post">
             {% csrf_token %}
+            
             <label>Username</label>
             {{ form.username }}
+            {% if form.username.errors %}
+            <div class="text-danger">
+                {{ form.username.errors.0 }}
+            </div>
+            {% endif %}
             
             <label>Email</label>
             {{ form.email }}
-            
+            {% if form.email.errors %}
+            <div class="text-danger">
+                {{ form.email.errors.0 }}
+            </div>
+            {% endif %}
+        
             <label>Password</label>
             {{ form.password1 }}
-            
+            {% if form.password1.errors %}
+            <div class="text-danger">
+                {{ form.password1.errors.0 }}
+            </div>
+            {% endif %}
+        
             <label>Confirm Password</label>
-            {{ form.password2 }}            
-
+            {{ form.password2 }}
+            {% if form.password2.errors %}
+            <div class="text-danger">
+                {{ form.password2.errors.0 }}
+            </div>
+            {% endif %}
+        
             <button type="submit" class="btn btn-primary w-100">Sign Up</button>
         </form>
-        {% if form.errors %}
-        <div class="alert alert-danger">
-            {{ form.errors }}
-        </div>
-    {% endif %}
+        
+
+  
     
         <p class="auth-switch">Already have an account? <a href="{% url 'login' %}">Log In</a></p>
     </div>

@@ -46,7 +46,7 @@
     <!-- 中间：Account选择 + 数字键盘 + Note -->
     <div class="col-md-4 mb-4 card-container">
         <div class="card p-3">
-          <div class="mb-3">
+          <div class="section-title">
             <label>Select Account</label>
             <select class="form-control rounded-input" id="visibleAccountSelect">
               {% for acc in form.account.field.queryset %}
@@ -71,7 +71,7 @@
               <button class="key" data-action="dot">.</button>
               <button class="key clear-key" data-action="clear">C</button>
             </div>
-            <div class="amount-display rounded-input" id="amountDisplay">0</div>
+            <div class="amount-display rounded-input mt-4" id="amountDisplay">0</div>
           </div>
   
          
@@ -83,7 +83,7 @@
         <div class="card p-3">
           <h5 class="section-title">Select Date</h5>
           <div id="calendar" class="calendar-container"></div>
-          <div class="mb-3">
+          <div class="mt-4">
             <h5 class="section-title">Add a note</h5>
             {{ form.note }}
           </div>
@@ -99,7 +99,13 @@
     {{ form.errors }}
   </div>
 {% endif %}
+
+
+<div class="row">
+  <div class="col-12 text-end">
     <button class="btn btn-primary save-btn" id="saveBtn">Save</button>
+  </div>
+</div>
   </div>
 
   <!-- 隐藏表单 (Django实际提交) -->

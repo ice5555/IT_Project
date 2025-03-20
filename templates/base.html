@@ -32,11 +32,15 @@
         <!-- 中间：导航链接 -->
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav mx-auto">
+
             <li class="nav-item">
               <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'finance_app:dashboard' %}">Overview</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {% if request.resolver_match.url_name == 'transaction_list' %}active{% endif %}" href="{% url 'finance_app:transaction_list' %}">Transactions</a>
+              <a class="nav-link {% if request.resolver_match.url_name == 'account_list' %}active{% endif %}" href="{% url 'finance_app:account_list' %}">Accounts</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if request.resolver_match.url_name == 'transactions' %}active{% endif %}" href="{% url 'finance_app:transactions' %}">Transactions</a>
             </li>
             <li class="nav-item">
               <a class="nav-link {% if request.resolver_match.url_name == 'budget_view' %}active{% endif %}" href="{% url 'finance_app:budget_view' %}">Budget</a>
@@ -44,15 +48,20 @@
             <li class="nav-item">
               <a class="nav-link {% if request.resolver_match.url_name == 'analytics' %}active{% endif %}" href="{% url 'finance_app:analytics' %}">Analytics</a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link {% if request.resolver_match.url_name == 'account_list' %}active{% endif %}" href="{% url 'finance_app:account_list' %}">Accounts</a>
-            </li>
+
 
           </ul>
           <!-- 右侧：图标 + 用户头像 -->
           <div class="d-flex align-items-center gap-3">
-            <a href="#" class="nav-icon"><i class="bi bi-gear"></i></a>
-            <a href="#" class="nav-icon"><i class="bi bi-bell"></i></a>
+            <div class="dropdown">
+              <a class="nav-icon dropdown-toggle" href="#" id="settingsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-gear"></i>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="settingsDropdown">
+                <li><a class="dropdown-item" href="{% url 'user_auth:logout' %}">Logout</a></li>
+              </ul>
+            </div>
+                        <a href="#" class="nav-icon"><i class="bi bi-bell"></i></a>
             <img src="{% static 'images/user_avatar.png' %}" alt="User Avatar" class="rounded-circle" style="width: 28px; height: 28px;">
           </div>
         </div>

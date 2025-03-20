@@ -35,6 +35,7 @@ DEBUG = True
 ALLOWED_HOSTS = []
 ALLOWED_HOSTS.append('34.244.31.244')
 ALLOWED_HOSTS.append('127.0.0.1')
+ALLOWED_HOSTS.append('13.40.165.33')
 
 
 
@@ -43,6 +44,9 @@ CSRF_TRUSTED_ORIGINS.append('http://34.244.31.244:5525')
 CSRF_TRUSTED_ORIGINS.append('http://127.0.0.1')
 CSRF_TRUSTED_ORIGINS.append('http://127.0.0.1:8000')
 CSRF_TRUSTED_ORIGINS.append('http://localhost:8000')
+CSRF_TRUSTED_ORIGINS.append('http://13.40.165.33:5555')
+
+
 
 ALLOWED_HOSTS.append('3.249.122.152')
 CSRF_TRUSTED_ORIGINS.append('http://3.249.122.152:5525')
@@ -66,6 +70,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware", 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -165,7 +170,7 @@ REST_FRAMEWORK = {
 LOGIN_URL = 'login'
 
 # 设置登录后重定向的URL
-LOGIN_REDIRECT_URL = 'finance_app:transaction_list'  # 用命名空间修复
+LOGIN_REDIRECT_URL = 'finance_app:dashboard'  # 用命名空间修复
 
 # 设置注销后重定向的URL
 LOGOUT_REDIRECT_URL = 'login'

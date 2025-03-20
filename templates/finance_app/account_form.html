@@ -2,16 +2,35 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2>{{ title }}</h2>
-    <form method="post">
-        {% csrf_token %}
-        
-        {{ form.transaction_type }}  <!-- 确保隐藏字段被提交 -->
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="card shadow p-4" style="max-width: 500px; width: 100%;">
+        <h2 class="text-center mb-4">{{ title }}</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.transaction_type }}
+            
+            <div class="mb-3">
+                <label class="form-label">Name</label>
+                {{ form.name }}
+            </div>
 
-        {{ form.as_p }}
+            <div class="mb-3">
+                <label class="form-label">Balance</label>
+                {{ form.balance }}
+            </div>
 
-        <button type="submit" class="btn btn-primary">Save</button>
-    </form>
+            <div class="mb-3">
+                <label class="form-label">Account Type</label>
+                {{ form.account_type }}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Currency</label>
+                {{ form.currency }}
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Save</button>
+        </form>
+    </div>
 </div>
 {% endblock %}

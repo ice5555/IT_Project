@@ -1,10 +1,9 @@
+/* 布局与样式 */
 .section-title {
   font-size: 1rem;
   margin-bottom: 0.75rem;
   font-weight: 600;
 }
-
-/* 卡片容器基本布局 */
 .card-container {
   display: flex;
   justify-content: center;
@@ -13,29 +12,23 @@
   background: white;
   border-radius: 12px;
   box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
   width: 100%;
 }
 
-/* 图标网格布局 */
 .icon-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
-  justify-items: center;
 }
 .icon-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  text-align: center;
   cursor: pointer;
-  padding: 0.5rem;
-  transition: background-color 0.3s;
-  border-radius: 8px;
+  transition: all 0.3s;
 }
 .icon-circle {
   width: 60px;
   height: 60px;
-  margin-bottom: 0.5rem; /* 图标与文字的间距 */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -43,24 +36,23 @@
   background: #f8f9fa;
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
 }
+.icon-circle:hover {
+  background: #e9ecef;
+}
 .icon-item img {
   width: 48px;
   height: 48px;
 }
 .icon-item:hover {
-  background-color: #f1f3f5;
+  background-color: #e9ecef;
 }
 .icon-item.selected {
+  border-color: #007bff;
   background-color: #dbeafe;
 }
-.icon-item p {
-  margin: 0;
-  text-align: center;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
 
-/* 输入下拉与键盘 */
+
+
 .rounded-input {
   border: none;
   border-bottom: 2px solid #ddd;
@@ -68,10 +60,23 @@
   border-radius: 8px;
   box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
 }
+.save-btn {
+  padding: 12px 24px;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  background: linear-gradient(45deg, #007bff, #007bff);
+  transition: all 0.3s;
+}
+.save-btn:hover {
+  background: #0056b3;
+}
+
+/* 中间 - 数字键盘 */
 .keypad {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.75rem;
+  /* margin-bottom: 0.5rem; */
 }
 .key {
   padding: 1rem;
@@ -102,7 +107,7 @@
   text-align: right;
 }
 
-/* 自定义日历 */
+/* 右侧 - 自定义日历 */
 .calendar-container {
   background-color: #fff;
   border: 1px solid #ced4da;
@@ -142,20 +147,7 @@
   cursor: default;
 }
 
-/* 保存按钮 */
-.save-btn {
-  padding: 12px 24px;
-  font-size: 1.1rem;
-  border-radius: 8px;
-  background: #007bff;
-  transition: all 0.3s;
-  margin-top: 1rem;
-}
-.save-btn:hover {
-  background: #0056b3;
-}
-
-/* 响应式调整 */
+/* 调整小屏效果 */
 @media (max-width: 768px) {
   .icon-grid {
     grid-template-columns: repeat(3, 1fr);

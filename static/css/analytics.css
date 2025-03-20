@@ -1,15 +1,23 @@
+/* 卡片的间距和阴影 */
 .card {
-    margin-bottom: 1.5rem;
-  }
-  
-  .card-header {
-    font-weight: bold;
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
-  }
-  
-  canvas {
-    max-width: 100%;
-    height: auto;
-  }
-  
+  margin-bottom: 1rem; /* 适度减小卡片间距 */
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+/* 卡片头部的样式 */
+.card-header {
+  font-weight: 600;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+/* 适度减少卡片内容的内边距 */
+.card-body {
+  padding: 1rem;
+}
+
+/* 控制图表的最大高度，避免过于高耸 */
+canvas {
+  width: 100%;
+  max-height: 400px; /* 可以根据需要进行调整 */
+}
