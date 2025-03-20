@@ -8,8 +8,9 @@ def register(request):
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)  # 注册后自动登录
-            return redirect('overview')
+            login(request, user)  # 注册成功后自动登录
+            return redirect('/accounts/login/')
     else:
         form = UserRegistrationForm()
+    
     return render(request, 'registration/register.html', {'form': form})

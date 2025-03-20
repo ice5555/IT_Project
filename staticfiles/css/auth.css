@@ -1,0 +1,104 @@
+body {
+    background-color: #f8f9fd;
+    font-family: 'Poppins', sans-serif;
+}
+
+.login-container, .register-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.login-card, .register-card {
+    display: flex;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 850px;
+    overflow: hidden;
+}
+
+.login-left, .register-left {
+    flex: 1;
+    background: #eef2ff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    text-align: center;
+}
+
+.login-left img, .register-left img {
+    width: 80%;
+    margin-bottom: 20px;
+}
+
+.login-right, .register-right {
+    flex: 1;
+    padding: 40px;
+}
+
+h2 {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+p {
+    font-size: 14px;
+    color: #6c757d;
+}
+
+form {
+    margin-top: 20px;
+}
+
+label {
+    display: block;
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 20px;
+    border: none;
+    border-radius: 5px;
+    background: #4A90E2;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #357ABD;
+}
+
+.forgot-password {
+    display: block;
+    text-align: right;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #4A90E2;
+}
+
+.register-link, .login-link {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.register-link a, .login-link a {
+    color: #4A90E2;
+    font-weight: bold;
+}

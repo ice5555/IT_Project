@@ -8,7 +8,7 @@ from django.db.models.functions import TruncMonth
 from django.contrib.auth.decorators import login_required
 from django.db.models.functions import TruncDay
 
-from ..records.models import ExpenseRecord, IncomeRecord, CURRENCY_SYMBOLS
+from ..records.models import Transaction, CURRENCY_SYMBOLS
 from django.utils import timezone
 from datetime import datetime, timedelta
 

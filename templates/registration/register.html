@@ -1,14 +1,51 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}用户注册{% endblock %}
+{% block title %}Sign Up - Finance Tracker{% endblock %}
 
 {% block content %}
-<h2 class="mb-4">用户注册</h2>
+<div class="auth-container">
+    <!-- 左侧图片区域 -->
+    <div class="auth-image">
+        <img src="{% static 'images/register-illustration.png' %}" alt="Register Illustration">
+        <h3>Track and Analyze Your Daily Expenses</h3>
+        <p>Effortlessly record your income and spending. Get insights into your financial habits with detailed analytics and reports.</p>
+    </div>
+    
+    {% if form.errors %}
+    <div class="alert alert-danger">
+        {{ form.errors }}
+    </div>
+    {% endif %}
+    
+    <!-- 右侧表单区域 -->
+    <div class="auth-form">
+        <h2>Create Account! 👋</h2>
+        <p>Create an account so you can explore all the features available.</p>
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">注册</button>
-</form>
+        <form method="post">
+            {% csrf_token %}
+            <label>Username</label>
+            {{ form.username }}
+            
+            <label>Email</label>
+            {{ form.email }}
+            
+            <label>Password</label>
+            {{ form.password1 }}
+            
+            <label>Confirm Password</label>
+            {{ form.password2 }}            
 
+            <button type="submit" class="btn btn-primary w-100">Sign Up</button>
+        </form>
+        {% if form.errors %}
+        <div class="alert alert-danger">
+            {{ form.errors }}
+        </div>
+    {% endif %}
+    
+        <p class="auth-switch">Already have an account? <a href="{% url 'login' %}">Log In</a></p>
+    </div>
+</div>
 {% endblock %}

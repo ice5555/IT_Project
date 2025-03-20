@@ -1,0 +1,22 @@
+/* custom.css */
+.table-hover tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+.date-header {
+    font-weight: bold;
+    color: #007bff;
+    margin-top: 20px;
+}
+
+.btn-edit {
+    background-color: #ffc107;
+    border: none;
+    border-radius: 5px;
+    transition: 0.3s ease;
+}
+
+.btn-edit:hover {
+    background-color: #ffb300;
+    transform: scale(1.05);
+}

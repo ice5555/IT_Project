@@ -1,21 +1,11 @@
+# apps/records/serializers.py
+
 from rest_framework import serializers
-from .models import ExpenseRecord, DailyExpense, IncomeRecord
+from .models import Transaction
 
-class ExpenseRecordSerializer(serializers.ModelSerializer):
+class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ExpenseRecord
+        model = Transaction
         fields = '__all__'
         read_only_fields = ('user',)
 
-
-class DailyExpenseSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = DailyExpense
-        fields = '__all__'
-        read_only_fields = ('user',)
-
-class IncomeRecordSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = IncomeRecord
-        fields = '__all__'
-        read_only_fields = ('user',)
