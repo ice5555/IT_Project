@@ -1,8 +1,60 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block title %}Transactions{% endblock %}
+
 {% block content %}
 <h1>Transactions</h1>
-<a href="{% url 'finance_app:transaction_create' %}" class="btn btn-primary mb-3">Add New Transaction</a>
+
+<!-- 过滤表单 -->
+<form method="get" class="mb-4">
+    <div class="row g-2">
+        <div class="col-md-2">
+            <input type="number" name="min_amount" class="form-control" placeholder="Min Amount">
+        </div>
+        <div class="col-md-2">
+            <input type="number" name="max_amount" class="form-control" placeholder="Max Amount">
+        </div>
+        <div class="col-md-2">
+            <input type="date" name="start_date" class="form-control" placeholder="Start Date">
+        </div>
+        <div class="col-md-2">
+            <input type="date" name="end_date" class="form-control" placeholder="End Date">
+        </div>
+        <form method="get" class="mb-3">
+          <label for="accountFilter">Filter by Account:</label>
+          <select name="account_id" id="accountFilter" class="form-control w-25 d-inline-block">
+              <option value="">All Accounts</option>
+              {% for acc in accounts %}
+                  <option value="{{ acc.id }}" {% if selected_account == acc.id|stringformat:"s" %}selected{% endif %}>
+                      {{ acc.name }}
+                  </option>
+              {% endfor %}
+          </select>
+          <button type="submit" class="btn btn-secondary">Filter</button>
+      </form>
+      
+        <div class="col-md-2">
+            <!-- 下拉选择账户：你可以传入 accounts -->
+            <select name="account" class="form-control">
+                <option value="">All Accounts</option>
+                {% for acc in accounts %}
+                    <option value="{{ acc.id }}">{{ acc.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <!-- 下拉选择类别 -->
+            <select name="category" class="form-control">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-secondary mt-2">Filter</button>
+</form>
 
 <table class="table table-striped">
   <thead>
@@ -17,11 +69,11 @@
   </thead>
   <tbody>
     {% for transaction in transactions %}
-    <tr>
+    <tr data-id="{{ transaction.id }}" class="transaction-row">
       <td>{{ transaction.date|date:"Y-m-d" }}</td>
       <td>{{ transaction.get_transaction_type_display }}</td>
       <td>{{ transaction.category }}</td>
-      <td>{{ transaction.amount }}</td>
+      <td>£{{ transaction.amount }}</td>
       <td>{{ transaction.note }}</td>
       <td>
         <a href="{% url 'finance_app:transaction_edit' transaction.id %}" class="btn btn-sm btn-warning">Edit</a>
@@ -33,4 +85,43 @@
     {% endfor %}
   </tbody>
 </table>
+
+<!-- 模态框，用于显示交易详情 -->
+<div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="transactionModalLabel">Transaction Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="transactionModalBody">
+        <!-- 通过 AJAX 填充详情内容 -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 交易详情弹出（使用 Bootstrap Modal）
+    document.querySelectorAll('.transaction-row').forEach(row => {
+        row.addEventListener('click', function() {
+            const txId = this.dataset.id;
+            fetch(`/transaction/detail/${txId}/`)
+              .then(response => response.text())
+              .then(html => {
+                  document.getElementById('transactionModalBody').innerHTML = html;
+                  var myModal = new bootstrap.Modal(document.getElementById('transactionModal'));
+                  myModal.show();
+              });
+        });
+    });
+});
+</script>
 {% endblock %}

@@ -18,6 +18,12 @@
         <tbody>
             {% for account in accounts %}
             <tr>
+                <td>
+                    <a href="{% url 'finance_app:account_edit' account.pk %}" class="btn btn-warning btn-sm">Edit</a>
+                    <a href="{% url 'finance_app:account_delete' account.pk %}" class="btn btn-danger btn-sm">Delete</a>
+                    <a href="{% url 'finance_app:account_detail' account.pk %}" class="btn btn-info btn-sm">Details</a>
+                </td>
+                
                 <td>{{ account.name }}</td>
                 <td>£{{ account.balance|floatformat:2 }}</td>
                 <td>{{ account.account_type }}</td>

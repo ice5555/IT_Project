@@ -1,57 +1,122 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load static %}
+
 {% block title %}Analytics{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/analytics.css' %}">
+{% endblock %}
+
 {% block content %}
-<h1>Financial Analytics</h1>
+<div class="container mt-4">
+  <h2>Financial Analytics</h2>
+  
+  <!-- 收支趋势图 -->
+  <div class="card mb-4">
+    <div class="card-header">Income vs Expense Trend (Last 30 Days)</div>
+    <div class="card-body">
+      <canvas id="trendChart"></canvas>
+    </div>
+  </div>
 
-<!-- 收支趋势图 -->
-<h3>Income vs Expense (Last 30 Days)</h3>
-<canvas id="incomeExpenseChart"></canvas>
+  <!-- 类别占比饼图 -->
+  <div class="card mb-4">
+    <div class="card-header">Expense Category Distribution</div>
+    <div class="card-body">
+      <canvas id="categoryChart"></canvas>
+    </div>
+  </div>
 
-<!-- 类别占比饼图 -->
-<h3>Category Breakdown</h3>
-<canvas id="categoryChart"></canvas>
-
+  <!-- 各账户余额变化（简单示例） -->
+  <div class="card mb-4">
+    <div class="card-header">Account Balance Change</div>
+    <div class="card-body">
+      <canvas id="accountChart"></canvas>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function(){
-    const incomeData = {{ income_data|safe }};
-    const expenseData = {{ expense_data|safe }};
-    const categoryData = {{ category_data|safe }};
-
-    // 收支趋势
-    const labels = Object.keys({...incomeData, ...expenseData}).sort();
-    const incomeValues = labels.map(date => incomeData[date] || 0);
-    const expenseValues = labels.map(date => expenseData[date] || 0);
-
-    const ctx1 = document.getElementById('incomeExpenseChart').getContext('2d');
-    new Chart(ctx1, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [
-                { label: 'Income', data: incomeValues, borderColor: 'green', fill: false },
-                { label: 'Expense', data: expenseValues, borderColor: 'red', fill: false }
-            ]
+document.addEventListener('DOMContentLoaded', function() {
+  // 1. 收支趋势图（折线图）
+  const trendCtx = document.getElementById('trendChart').getContext('2d');
+  const trendChart = new Chart(trendCtx, {
+    type: 'line',
+    data: {
+      labels: {{ income_trend_dates|safe }},  // 日期列表
+      datasets: [
+        {
+          label: 'Income',
+          data: {{ income_trend_values|safe }},
+          borderColor: 'green',
+          fill: false
         },
-        options: { responsive: true }
-    });
+        {
+          label: 'Expense',
+          data: {{ expense_trend_values|safe }},
+          borderColor: 'red',
+          fill: false
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
 
-    // 类别占比饼图
-    const categories = Object.keys(categoryData);
-    const categoryValues = Object.values(categoryData);
+  // 2. 类别占比（饼图）
+  const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+  const categoryData = {{ category_distribution|safe }};
+  const categoryLabels = Object.keys(categoryData);
+  const categoryValues = Object.values(categoryData);
+  const categoryChart = new Chart(categoryCtx, {
+    type: 'pie',
+    data: {
+      labels: categoryLabels,
+      datasets: [{
+        data: categoryValues,
+        backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545', '#17a2b8', '#6f42c1', '#fd7e14', '#20c997', '#343a40'],
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom' }
+      }
+    }
+  });
 
-    const ctx2 = document.getElementById('categoryChart').getContext('2d');
-    new Chart(ctx2, {
-        type: 'pie',
-        data: {
-            labels: categories,
-            datasets: [{ data: categoryValues, backgroundColor: ['blue', 'red', 'green', 'orange', 'purple'] }]
-        },
-        options: { responsive: true }
-    });
+  // 3. 各账户余额变化（折线图）— 简单示例：仅显示初始余额和当前余额
+  const accountCtx = document.getElementById('accountChart').getContext('2d');
+  const accountData = {{ account_data|safe }};
+  const accountLabels = Object.keys(accountData);
+  const initialBalances = accountLabels.map(name => accountData[name].initial);
+  const currentBalances = accountLabels.map(name => accountData[name].current);
+
+  const accountChart = new Chart(accountCtx, {
+    type: 'line',
+    data: {
+      labels: ['30 Days Ago', 'Now'],
+      datasets: accountLabels.map((name, index) => ({
+        label: name,
+        data: [accountData[name].initial, accountData[name].current],
+        borderColor: '#' + Math.floor(Math.random()*16777215).toString(16), // 随机颜色
+        fill: false
+      }))
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: { beginAtZero: false }
+      }
+    }
+  });
 });
 </script>
 {% endblock %}

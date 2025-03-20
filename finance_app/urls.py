@@ -20,6 +20,7 @@ urlpatterns = [
     path('accounts/create/', views.account_create, name='account_create'),
     path('accounts/<int:pk>/edit/', views.account_edit, name='account_edit'),
     path('accounts/<int:pk>/delete/', views.account_delete, name='account_delete'),
+path('accounts/<int:account_id>/', views.account_detail, name='account_detail'),
 
     path('transactions/', views.transaction_list, name='transaction_list'),
     path('transactions/create/', views.transaction_create, name='transaction_create'),
@@ -29,7 +30,11 @@ urlpatterns = [
     path('analytics/', views.analytics, name='analytics'),
 
     path('add-transaction/<str:tx_type>/', views.add_transaction, name='add_transaction'),
+path('transaction/detail/<int:pk>/', views.transaction_detail, name='transaction_detail'),
+path('transactions/export/csv/', views.export_transactions_csv, name='export_transactions_csv'),
+path('transactions/export/json/', views.export_transactions_json, name='export_transactions_json'),
+path('transactions/import/', views.import_transactions_csv, name='import_transactions_csv'),
 
     # AJAX
-    path('transactions/filter_ajax/', views.transaction_filter_ajax, name='transaction_filter_ajax'),
+    path('transactions/filter_ajax/', views.dashboard_filter_ajax, name='dashboard_filter_ajax'),
 ]

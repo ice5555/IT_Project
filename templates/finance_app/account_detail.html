@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Account Details{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ account.name }} Details</h2>
+    <p>Balance: £{{ account.balance|floatformat:2 }}</p>
+    <hr>
+    <h4>Transactions for this account</h4>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Note</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tx in transactions %}
+            <tr>
+                <td>{{ tx.date|date:"Y-m-d" }}</td>
+                <td>{{ tx.get_transaction_type_display }}</td>
+                <td>{{ tx.category }}</td>
+                <td>£{{ tx.amount }}</td>
+                <td>{{ tx.note }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center">No transactions for this account.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'finance_app:account_list' %}" class="btn btn-secondary">Back to Accounts</a>
+</div>
+{% endblock %}
